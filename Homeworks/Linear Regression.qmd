@@ -1,0 +1,47 @@
+---
+title: "Linear Regression"
+author: "Marco Guerra Hinostroza"
+date: "`r Sys.Date()`"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+    number-sections: false
+    code-fold: true
+---
+
+```{css, echo = FALSE}
+.justified {
+    text-align: justify;
+}
+```
+
+```{r setup, include=FALSE}
+library(knitr)
+library(openxlsx)
+```
+
+# Theoretical questions
+
+## Q1
+
+## Q2
+
+## Q3
+
+## Q4
+
+## Q5
+
+# Practical questions
+
+## Q6
+
+## Q7
+
+## Q8
+
+## Q9
+
+## Q10
