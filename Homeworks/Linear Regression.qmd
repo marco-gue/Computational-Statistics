@@ -8,7 +8,9 @@ format:
     toc: true
     toc-location: left
     number-sections: false
-    code-fold: true
+    code-fold: false
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{css, echo = FALSE}
@@ -19,7 +21,10 @@ format:
 
 ```{r setup, include=FALSE}
 library(knitr)
+library(agridat)
 library(openxlsx)
+library(tidyverse)
+library(tidymodels)
 ```
 
 # Theoretical questions
@@ -36,12 +41,141 @@ library(openxlsx)
 
 # Practical questions
 
-## Q6
+## **Estimate the model fit with $R^2$**
+```{r}
+data("reid.grasses")
+data <- reid.grasses
+```
+
+$$y_i = \beta_0 + \beta_{1}x_i + \epsilon$$
+Where $\beta_0$ is the intercept, $\beta_1$ is the effect of the nitrogen level, and $\epsilon$ is the effect of error.
+
+```{r}
+model <- lm(drymatter ~ nitro, data = data)
+```
+
+To calculate $R^2$, we use the formula
+
+$$R^2 = \frac{TSS - RSS}{TSS} = 1 - \frac{\sum(y_i  - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2}$$
+Where $y_i$ is the i-th observed response value, $\hat{y}_i$ is the i-th predicted response value, and $\bar{y}$ is the mean of the observed values.
+
+```{r}
+observed_values <- model$model$drymatter
+predicted_values <- fitted(model)
+
+# Total Sum of Squares (TSS)
+tss <- sum((observed_values - mean(observed_values))^2)
+
+# Residual Sum of Squares (RSS)
+rss <- sum((observed_values - predicted_values)^2)
+
+# R^2
+r_squared <- 1 - (rss / tss)
+r_squared
+```
+
+
+```{r}
+summary(model)
+```
+
+## **Evaluating the association between X and Y**
+
+Ho : There is no relationship between X and Y
+
+Ha : There is some relationship between X and Y.
+
+Ho : $\beta_1$ $=$ 0
+
+Ha : $\beta_1$ $\neq$ 0
+
+$$t = \frac{\hat{\beta_1} - 0}{SE(\hat{\beta_1})}$$
+
+$$\hat{\beta_1} = \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n}(x_i - \bar{x})^2}$$
+
+$$SE(\hat{\beta_1}) = \sqrt{\frac{\sigma^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}}$$
+
+```{r}
+# Calculate β1 manually using the formula
+nitro_mean <- mean(data$nitro)
+drymatter_mean <- mean(data$drymatter)
+beta1 <- sum((data$nitro - nitro_mean)*(data$drymatter - drymatter_mean)) /
+  sum((data$nitro - nitro_mean)^2)
+
+# Calculate σ²
+residuals <- model$residuals
+n <- length(residuals)  # number of observations
+p <- length(coef(model))  # number of parameters (including intercept)
+observed_values <- model$model$drymatter
+predicted_values <- fitted(model)
+sigma2 <- sum((observed_values - predicted_values)^2)/(n - p)
+
+# Calculate SE(β1)
+se_beta1 <- sqrt(sigma2 / sum((data$nitro - nitro_mean)^2))
+
+# Calculate t-statistic
+t_statistic <- (beta1 - 0) / se_beta1
+t_statistic
+```
+
+```{r}
+# Critical t-value for a two-tailed test
+t_crt <- qt(1 - 0.05/2, n - 2)
+t_crt
+```
+
+
+## **Other question**
+```{r}
+names(model)
+coef(model)
+confint(model)
+predict(model, data.frame(nitro=(c(50,100,200))), interval ="confidence")
+predict(model, data.frame(nitro=(c(50,100,200))), interval ="prediction")
+
+plot.new()
+plot(data$nitro,data$drymatter)
+abline(model, lwd = 3 , col = "red")
+
+plot(predict(model), residuals(model))
+plot(predict(model), rstudent(model))
+
+plot(hatvalues(model))
+
+which.max(hatvalues(model))
+
+cooks.distance(model)[which.max(hatvalues(model))]
+plot(model,which=4)
+
+```
+
 
 ## Q7
+```{r}
+
+```
+
 
 ## Q8
+```{r}
+
+```
+
 
 ## Q9
+```{r}
+
+```
+
 
 ## Q10
+```{r}
+
+```
+
+
+# Z test
+```{r}
+
+```
+
