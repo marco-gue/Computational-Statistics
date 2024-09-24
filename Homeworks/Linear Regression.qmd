@@ -9,6 +9,8 @@ format:
     toc-location: left
     number-sections: false
     code-fold: false
+    filters:
+        - highlight-text
 editor_options: 
   chunk_output_type: console
 ---
@@ -22,26 +24,25 @@ editor_options:
 ```{r setup, include=FALSE}
 library(knitr)
 library(agridat)
-library(openxlsx)
 library(tidyverse)
 library(tidymodels)
 ```
 
 # Theoretical questions
 
-## Q1
+### Q1
 
-## Q2
+### Q2
 
-## Q3
+### **Q3. Why is the application of F-statistics in multiple linear regression more appropriate?**
 
-## Q4
+### Q4
 
-## Q5
+### Q5
 
 # Practical questions
 
-## **Estimate the model fit with $R^2$**
+### **Q6. Evaluating the association between X and Y**
 ```{r}
 data("reid.grasses")
 data <- reid.grasses
@@ -54,46 +55,28 @@ Where $\beta_0$ is the intercept, $\beta_1$ is the effect of the nitrogen level,
 model <- lm(drymatter ~ nitro, data = data)
 ```
 
-To calculate $R^2$, we use the formula
+Hypothesis testing
 
-$$R^2 = \frac{TSS - RSS}{TSS} = 1 - \frac{\sum(y_i  - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2}$$
-Where $y_i$ is the i-th observed response value, $\hat{y}_i$ is the i-th predicted response value, and $\bar{y}$ is the mean of the observed values.
+Ho : There is no relationship between X and Y ($\beta_1$ $=$ 0).
 
-```{r}
-observed_values <- model$model$drymatter
-predicted_values <- fitted(model)
+Ha : There is some relationship between X and Y ($\beta_1$ $\neq$ 0).
 
-# Total Sum of Squares (TSS)
-tss <- sum((observed_values - mean(observed_values))^2)
-
-# Residual Sum of Squares (RSS)
-rss <- sum((observed_values - predicted_values)^2)
-
-# R^2
-r_squared <- 1 - (rss / tss)
-r_squared
-```
-
-
-```{r}
-summary(model)
-```
-
-## **Evaluating the association between X and Y**
-
-Ho : There is no relationship between X and Y
-
-Ha : There is some relationship between X and Y.
-
-Ho : $\beta_1$ $=$ 0
-
-Ha : $\beta_1$ $\neq$ 0
+We use the t-statistic, t-statistic given by
 
 $$t = \frac{\hat{\beta_1} - 0}{SE(\hat{\beta_1})}$$
 
-$$\hat{\beta_1} = \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n}(x_i - \bar{x})^2}$$
+:::: {.columns}
 
+::: {.column width="50%"}
+$$\hat{\beta_1} = \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n}(x_i - \bar{x})^2}$$
+:::
+
+::: {.column width="50%"}
 $$SE(\hat{\beta_1}) = \sqrt{\frac{\sigma^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}}$$
+:::
+
+::::
+
 
 ```{r}
 # Calculate β1 manually using the formula
@@ -118,63 +101,75 @@ t_statistic <- (beta1 - 0) / se_beta1
 t_statistic
 ```
 
+Considering a significance level of 0.001.
 ```{r}
 # Critical t-value for a two-tailed test
-t_crt <- qt(1 - 0.05/2, n - 2)
+t_crt <- qt(1 - 0.001/2, n - 2)
 t_crt
 ```
 
+[Conclusion]{colour="#FFFFFF" bg-colour="#b22222"}\
+At a significance level of 0.001 we reject the Ho. Therefore, there is an association between nitrogen level and dry matter.
 
-## **Other question**
+### **Q7. Estimate the model fit with $R^2$**
+To calculate $R^2$, we use the formula
+
+$$R^2 = \frac{TSS - RSS}{TSS} = 1 - \frac{\sum(y_i  - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2}$$
+Where $y_i$ is the i-th observed response value, $\hat{y}_i$ is the i-th predicted response value, and $\bar{y}$ is the mean of the observed values.
+
 ```{r}
-names(model)
-coef(model)
-confint(model)
-predict(model, data.frame(nitro=(c(50,100,200))), interval ="confidence")
-predict(model, data.frame(nitro=(c(50,100,200))), interval ="prediction")
+observed_values <- model$model$drymatter
+predicted_values <- fitted(model)
 
-plot.new()
-plot(data$nitro,data$drymatter)
-abline(model, lwd = 3 , col = "red")
+# Total Sum of Squares (TSS)
+tss <- sum((observed_values - mean(observed_values))^2)
 
-plot(predict(model), residuals(model))
-plot(predict(model), rstudent(model))
+# Residual Sum of Squares (RSS)
+rss <- sum((observed_values - predicted_values)^2)
 
-plot(hatvalues(model))
+# R^2
+r_squared <- 1 - (rss / tss)
+r_squared
+```
 
-which.max(hatvalues(model))
+[Summary of results of the fitted model]{color="#FFFFFF" bg-color="#0000FF"}
+```{r}
+summary(model)
+```
 
-cooks.distance(model)[which.max(hatvalues(model))]
-plot(model,which=4)
+### **Q8. LMM**
+
+```{r}
+mmodel <- lm(protein ~ nitro + drymatter, data = data)
+```
+
+```{r}
+summary(mmodel)
+```
+
+### **Q9. MLR with discrete variables**
+
+```{r}
+mdmodel <- lm(protein ~  nitro + gen + year, data = data)
+```
+
+```{r}
+summary(mdmodel)
+```
+
+```{r}
+contrasts(gen)
+contrasts(year)
+```
+
+
+### **Q10. MLR with discrete variables**
+```{r}
 
 ```
 
 
-## Q7
-```{r}
-
-```
-
-
-## Q8
-```{r}
-
-```
-
-
-## Q9
-```{r}
-
-```
-
-
-## Q10
-```{r}
-
-```
-
-
-# Z test
+# Writing Functions
 ```{r}
 
 ```
