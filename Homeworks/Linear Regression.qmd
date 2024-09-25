@@ -1,5 +1,6 @@
 ---
-title: "Linear Regression"
+title: "Computational Statistic - Homework 1"
+subtitle: "Prof: Luiz Peternelli"
 author: "Marco Guerra Hinostroza"
 date: "`r Sys.Date()`"
 format:
@@ -23,22 +24,63 @@ editor_options:
 
 ```{r setup, include=FALSE}
 library(knitr)
+library(ISLR)
 library(agridat)
 library(tidyverse)
 library(tidymodels)
+library(plantuml)
 ```
 
 # Theoretical questions
 
-### Q1
+### **Q1. How is $\beta_i (i \neq 0)$ interpreted in simple linear regression and multiple linear regression?**
+**Simple Linear Regression**\
+$$y = \beta_0 + \beta_{1}x_1 + \epsilon$$
+*Interpretation*\
+$β_i$ is the slope, i.e. the average increase in $y$ associated with a one-unit increase in $x$.
 
-### Q2
+
+**Multiple Linear Regression**\
+$$y = \beta_0 + \beta_{1}x_{1} + \beta_{2}x_{2} + \dots + \beta_{p}x_{p} + \epsilon$$
+*Interpretation*\
+$β_i$ is the average eﬀect on $y$ of a one unit increase in $x_i$, holding all other predictors ﬁxed.
+
+
+### **Q2. What is the difference between the residual standard error (RSE) and the $R^2$ statistic?**
+<div style="text-align: justify;">
+The RSE is an estimate of the standard deviation of $\epsilon$. The RSE provides an absolute measure of the model's lack of ﬁt to the data. But because it is measured in units of $y$ it can be confusing to interpret. The $R^2$ statistic provides an alternative measure of ﬁt. It takes the form of a ratio, the proportion of variance explained, so it always takes a value between 0 and 1, and is independent of the $y$ scale.
+</div>
 
 ### **Q3. Why is the application of F-statistics in multiple linear regression more appropriate?**
 
-### Q4
+<div style="text-align: justify;">
+It is more appropriate when we have many predicted variables.
+For example, $p = 100$ and $Ho : β_1 = β_2 = .... = β_p = 0$ is true, so no variable is actually associated with the response. In this situation, approximately 5% of the p-values associated with each variable will be below 0.05 by chance. Therefore, if we use the individual t-statistics and the associated p-values to decide whether or not there is any association between the variables and the response, there is a very high probability that we will incorrectly conclude that there is a relationship. However, the F statistic is not affected by this problem because it adjusts for the number of predictors. Therefore, if Ho is true, there is only a 5% chance that the F-statistic will result in a p-value of less than 0.05, regardless of the number of predictors or the number of observations.
+</div>
 
-### Q5
+$$F = \frac{{(TSS - RSS)}/{p}}{{RSS}/{(n - p - 1)}}$$
+
+### **Q4. Deciding on Important Variables**
+[Forward selection]{colour="#FFFFFF" bg-colour="#b22222"}\
+<div style="text-align: justify;">
+We start with a model that has only the intercept. We then fit p simple linear regressions and add to the null model the variable that results in the lowest RSS.
+</div>
+
+[Backward selection]{colour="#FFFFFF" bg-colour="#b22222"}\
+<div style="text-align: justify;">
+We start with all variables in the model and eliminate the variable with the highest p-value. We fit the new model of (p - 1) variables and eliminate the variable with the highest p-value. This procedure continues until a stopping rule is reached. For example, we can stop when all remaining variables have a p-value below some threshold.
+</div>
+
+
+[Mixed selection]{colour="#FFFFFF" bg-colour="#b22222"}\
+<div style="text-align: justify;">
+We start with no variables in the model by adding the variables one by one. The p-values of the variables may increase as new predictors are added to the model. Therefore, if at any point the p-value of one of the variables in the model exceeds a certain threshold, we remove that variable from the model. We continue these steps back and forth until all variables in the model have a sufficiently low p-value and all variables outside the model would have a high p-value if they were added to the model.
+</div>
+
+### **Q5. Outliers that have little effect on the model fit do not cause any problems?**
+<div style="text-align: justify;">
+An outlier that does not have much eﬀect on the fit of the model may cause other problems. For example, it may overestimate the RSE value if the outlier is not removed. Since the RSE is used to calculate all conﬁdence intervals and p-values, a drastic increase caused by a single data point may have implications for the interpretation of the fit.
+</div>
 
 # Practical questions
 
@@ -128,8 +170,8 @@ tss <- sum((observed_values - mean(observed_values))^2)
 rss <- sum((observed_values - predicted_values)^2)
 
 # R^2
-r_squared <- 1 - (rss / tss)
-r_squared
+R2 <- 1 - (rss / tss)
+R2
 ```
 
 [Summary of results of the fitted model]{color="#FFFFFF" bg-color="#0000FF"}
@@ -137,40 +179,89 @@ r_squared
 summary(model)
 ```
 
-### **Q8. LMM**
+### **Q8. Scatter plot and correlation matrix on a data set used for MLR**
 
 ```{r}
-mmodel <- lm(protein ~ nitro + drymatter, data = data)
+data("cramer.cucumber")
+data2 <- cramer.cucumber
+
+pairs(data2[3:9],panel=panel.smooth)
+
+cor(data2[3:9])
 ```
 
+
+### **Q9. Relationship in Multiple Linear Regression**
 ```{r}
-summary(mmodel)
+
+modelcucumber <- lm(earlyfruit ~ plants + flowers + branches + leaves + totalfruit + culledfruit , data = data2)
+
+summary(modelcucumber)
 ```
 
-### **Q9. MLR with discrete variables**
+*Is there a relationship between the predictors and the response?*
+
+Although the F-statistic is close to 1, the p-value is less than 0.05 indicating that at least one of the predictors is related to the response variable.
+
+### **Q10. SLR with discrete variable**
+**Calculate the estimated values of the categories**
 
 ```{r}
-mdmodel <- lm(protein ~  nitro + gen + year, data = data)
-```
-
-```{r}
+mdmodel <- lm(drymatter ~ gen, data = data)
 summary(mdmodel)
 ```
 
 ```{r}
-contrasts(gen)
-contrasts(year)
+contrasts(data$gen)
 ```
 
-
-### **Q10. MLR with discrete variables**
 ```{r}
+mdmodel$coefficients
+estimated <- tibble(
+  Genotype = c("Barvestra", "genS.24", "genS.37", "genS.53"),
+  Value = c(
+    mdmodel$coefficients[1],  # Barvestra (intercept)
+    mdmodel$coefficients[1] + mdmodel$coefficients[2],  # genS.24
+    mdmodel$coefficients[1] + mdmodel$coefficients[3],  # genS.37
+    mdmodel$coefficients[1] + mdmodel$coefficients[4]   # genS.53
+  )
+)
+
+estimated
 
 ```
+
 
 
 # Writing Functions
 ```{r}
+ztest <- function(data, mu, sigma2) {
+  n <- length(data)
+  
+  sample_mean <- mean(data)
+  
+  sigma <- sqrt(sigma2)
+  
+  z_value <- (sample_mean - mu) / (sigma / sqrt(n))
+  
+  p_value <- 2 * pnorm(-abs(z_value))
+  
+  result <- list(
+    data = data,
+    sample_mean = sample_mean,
+    H0_mu = mu,
+    p_value = p_value
+  )
+  
+  return(result)
+}
 
 ```
+
+```{r}
+mod <- ztest(data = data$drymatter, mu = 8.3, sigma2 = 1.2)
+
+mod
+```
+
 
