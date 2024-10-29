@@ -1,0 +1,127 @@
+---
+title: "Generation of random samples"
+subtitle: "Prof: Luiz Peternelli"
+author: "Marco Guerra Hinostroza"
+date: "`r Sys.Date()`"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+    number-sections: false
+    code-fold: false
+    filters:
+        - highlight-text
+editor_options: 
+  chunk_output_type: console
+---
+
+# Metodo de transformacao
+
+$$
+f(n) = 
+\begin{cases}
+\frac{2}{3}(y + 1) \quad ; \quad 0 \le y \le 1 \\
+0 \quad ; \quad c.c
+\end{cases}
+$$
+
+### Funcao de distribucao acumulada
+
+$$
+F(y) = \frac{2}{3} \left( \int_0^y t \, dt + \int_0^y 1 \, dt \right)
+$$
+
+$$
+F(y) = \frac{2}{3} \left( \frac{y^2}{2} + y \right) = \frac{y^2 + 2y}{3}
+$$
+
+$$
+F(y) = \frac{y^2 + 2y}{3}, \quad  0 \leq y \leq 1
+$$
+
+### Inverte F(y)
+
+Definimos $F(y) = u$, onde $u$ e un numero aleatorio de uma distribucao uniforme $U(0,1)$.
+
+$$
+u = \frac{y^2 + 2y}{3}
+$$
+
+$$
+y^2 + 2y - 3u = 0
+$$
+Usando formula cuadratica
+
+$$
+y = \frac{-2 \pm \sqrt{4 + 12u}}{2} = -1 \pm \sqrt{1 + 3u}
+$$
+Como $y$ esta no intervalo, escogemos la solucion sotiva
+$$
+y = -1 + \sqrt{1 + 3u}
+$$
+
+### Geramos valores de Y usando U
+Para simular valores de variavel aleatoria Y, geramos valores $u \sim U(0,1)$ e sustituimos na expressao
+
+$$
+Y = F^{-1}(U) -1 + \sqrt{1 + 3U}
+$$
+
+```{r}
+simul <- function(n)
+{
+  ui <- runif(n)
+  x <- -1 + sqrt(1 + 3 * ui)
+  cat("number of iterations:", n, fill = TRUE)
+  hist(x, prob = TRUE)
+  return(x)
+}
+
+```
+
+```{r}
+j <- simul(100)
+curve(2/3*(x+1), 0, 1, add = TRUE, col = "blue")
+
+```
+
+# Método de Aceitação-Rejeição
+```{r}
+sim_ar <- function(n,m) {
+  y <- numeric(n)
+  #incluindo um contador para o tamanho da amostra
+  i <- 0
+  #incluindo um contador para o numero de pares de uniformes geradas
+  j <- 0
+  
+  while (i < n) {
+    # 1. Gerar Y candidato da distribuição proposta (Uniforme[0, 1])
+    yc <- runif(1, min = 0, max = 1)
+    
+    # 2. Gerar U da Uniforme[0, 1] para a aceitação
+    U <- runif(1)
+    
+    f <- 2/3*(yc+1)
+    
+    # 3. Teste de aceitação
+    if (U < f/m) {
+      y[i+1] <- yc  # Aceita o valor candidato
+      i <- i+1  # Incrementa o contador de aceitação
+    }
+    j <- j+1
+  }
+  cat("foram gerados ", j, "pares de uniformes ",fill=T)
+  cat("para simular ", i, " valores da v.a. de interesse ",fill=T)
+  cat("razao de eficiencia ",round((i/j)*100,2), "% ",fill=T)
+  return(y)
+}
+```
+
+```{r}
+y <- sim_ar(100,4/3)
+
+hist(y,prob=T)
+curve((x + 1)/2,0,1,add=T, col = "blue")
+```
+
