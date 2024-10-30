@@ -16,17 +16,18 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Metodo de transformacao
-
+# Probability density function
 $$
-f(n) = 
+f(y) = 
 \begin{cases}
 \frac{2}{3}(y + 1) \quad ; \quad 0 \le y \le 1 \\
 0 \quad ; \quad c.c
 \end{cases}
 $$
 
-### Funcao de distribucao acumulada
+# Method of transformation
+
+### Accumulated distribution function
 
 $$
 F(y) = \frac{2}{3} \left( \int_0^y t \, dt + \int_0^y 1 \, dt \right)
@@ -40,9 +41,9 @@ $$
 F(y) = \frac{y^2 + 2y}{3}, \quad  0 \leq y \leq 1
 $$
 
-### Inverte F(y)
+### inverting F(y)
 
-Definimos $F(y) = u$, onde $u$ e un numero aleatorio de uma distribucao uniforme $U(0,1)$.
+We define $F(y) = u$, where $u$ is a random number from a uniform distribution $U(0,1)$
 
 $$
 u = \frac{y^2 + 2y}{3}
@@ -51,42 +52,44 @@ $$
 $$
 y^2 + 2y - 3u = 0
 $$
-Usando formula cuadratica
+Using the quadratic formula
 
 $$
 y = \frac{-2 \pm \sqrt{4 + 12u}}{2} = -1 \pm \sqrt{1 + 3u}
 $$
-Como $y$ esta no intervalo, escogemos la solucion sotiva
+
+Since $y$ in the interval $0 \leq y \leq 1$ we choose the positive solution
+
 $$
 y = -1 + \sqrt{1 + 3u}
 $$
 
-### Geramos valores de Y usando U
-Para simular valores de variavel aleatoria Y, geramos valores $u \sim U(0,1)$ e sustituimos na expressao
+For simulate random variable values Y, we generate value $u \sim U(0,1)$ and replace in the expression
 
 $$
 Y = F^{-1}(U) -1 + \sqrt{1 + 3U}
 $$
 
 ```{r}
-simul <- function(n)
+sim_t <- function(n)
 {
   ui <- runif(n)
   x <- -1 + sqrt(1 + 3 * ui)
   cat("number of iterations:", n, fill = TRUE)
-  hist(x, prob = TRUE)
+  
   return(x)
 }
 
 ```
 
 ```{r}
-y_t <- simul(100)
+y_t <- sim_t(100)
+hist(y_t, prob = TRUE)
 curve(2/3*(x+1), 0, 1, add = TRUE, col = "blue")
 
 ```
 
-# Método de Aceitação-Rejeição
+# Method of acceptance-rejection
 ```{r}
 sim_ar <- function(n,m) {
   y <- numeric(n)
@@ -111,9 +114,9 @@ sim_ar <- function(n,m) {
     }
     j <- j+1
   }
-  cat("foram gerados ", j, "pares de uniformes ",fill=T)
-  cat("para simular ", i, " valores da v.a. de interesse ",fill=T)
-  cat("razao de eficiencia ",round((i/j)*100,2), "% ",fill=T)
+  cat("were generated ", j, "pair of uniforms ",fill=T)
+  cat("to simulate ", i, " values of the random variable of interest ",fill=T)
+  cat("ratio of efficiency ",round((i/j)*100,2), "% ",fill=T)
   return(y)
 }
 ```
@@ -125,35 +128,33 @@ hist(y_ar,prob=T)
 curve((x + 1)/2,0,1,add=T, col = "blue")
 ```
 
-#### Mean
+### Mean using different methods
 :::: {.columns}
-::: {.column width="50%"}
-##### Analitic
+::: {.column width="60%"}
+#### Analytical
 $$
-E(y) = \left( \int_0^1 y \cdot \frac{2}{3}(y+1) \, dy \right)
-$$
-
-$$
-E(y) = \frac{2}{3}\left( \int_0^1 y^2 \, dy + \int_0^1 y \, dy \right)
+E(Y) = \left( \int_0^1 y \cdot \frac{2}{3}(y+1) \, dy \right)
 $$
 
 $$
-E(y) = \frac{2}{3} \left( \frac{1}{3} + \frac{1}{2} \right) = 0.5555
+E(Y) = \frac{2}{3}\left( \int_0^1 y^2 \, dy + \int_0^1 y \, dy \right)
+$$
+
+$$
+E(Y) = \frac{2}{3} \left( \frac{1}{3} + \frac{1}{2} \right) = 0.5555
 $$
 :::
 
-::: {.column width="24%"}
-##### Simulated
+::: {.column width="3%"}
+:::
+
+::: {.column width="37%"}
+#### Transformation
 ```{r}
 mean(y_t)
 ```
-:::
 
-::: {.column width="2%"}
-:::
-
-::: {.column width="24%"}
-##### Simulated
+#### Acceptance-rejection
 ```{r}
 mean(y_ar)
 ```
@@ -161,10 +162,10 @@ mean(y_ar)
 
 ::::
 
-#### Variance
+### Variance using different methods
 :::: {.columns}
-::: {.column width="47.5%"}
-##### Analitic
+::: {.column width="60%"}
+#### Analytical
 $$
 \text{Var}(Y) = E(Y^2) - [E(Y)]^2
 $$
@@ -189,21 +190,110 @@ variance_Y
 ::: {.column width="3%"}
 :::
 
-::: {.column width="23.75%"}
-##### Simulated
+::: {.column width="37%"}
+#### Transformation
 ```{r}
 var(y_t)
 ```
-:::
 
-::: {.column width="2%"}
-:::
-
-::: {.column width="23.75%"}
-##### Simulated
+#### Acceptance-rejection
 ```{r}
 var(y_ar)
 ```
 :::
 
 ::::
+
+# Discussion
+
+* The transformation method is simpler to apply but restricted, on the other hand the acceptance-rejection method is more versatile but a bit more difficult to construct.
+
+* In terms of execution time, when the number of simulated values is low, the times are quite similar. However, as the number of simulated values increases significantly, the differences become more pronounced, with the acceptance-rejection method taking longer to execute.
+
+:::: {.columns}
+::: {.column width="32.6%"}
+```{r}
+#| output: false
+start <-Sys.time()
+sim_t(10000)
+end <- Sys.time()
+end - start
+# 0.0173
+```
+
+```{r}
+#| output: false
+start <-Sys.time()
+sim_ar(10000, 4/3)
+end <- Sys.time()
+end - start
+# 0.0550
+```
+:::
+
+::: {.column width="1%"}
+:::
+
+::: {.column width="32.6%"}
+```{r}
+#| output: false
+start <-Sys.time()
+sim_t(100000)
+end <- Sys.time()
+end - start
+# 0.0195
+```
+
+```{r}
+#| output: false
+start <-Sys.time()
+sim_ar(100000, 4/3)
+end <- Sys.time()
+end - start
+# 0.3032
+```
+:::
+
+::: {.column width="1%"}
+:::
+
+::: {.column width="32.6%"}
+```{r}
+#| output: false
+start <-Sys.time()
+sim_t(1000000)
+end <- Sys.time()
+end - start
+# 0.0258
+```
+
+```{r}
+#| output: false
+start <-Sys.time()
+sim_ar(1000000, 4/3)
+end <- Sys.time()
+end - start
+# 2.6501
+```
+:::
+::::
+
+# Probability
+
+```{r}
+f_y <- function(y) {
+  (2 / 3) * (y + 1)
+}
+
+# Calculating the integral f(y) in the interval [0.5, 1]
+prob_exata <- integrate(f_y, lower = 0.5, upper = 1)$value
+
+cat("The exact probability P(0.5 ≤ Y ≤ 1) is:", prob_exata, "\n")
+
+```
+
+```{r}
+prob_ar <- mean(y_ar >= 0.5 & y_ar <= 1)
+cat("The probability estimated using acceptance-rejection method:", prob_ar, "\n")
+```
+
