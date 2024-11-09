@@ -258,7 +258,16 @@ for(i in 1:(n-1)) points(x=x[i+0:1], y=Fx[c(i,i)+1], type="l")
 :::
 
 ::::
+
 ### Conditional distribution (Z|X,Y)
+
+$$
+P(Z|X,Y)) = \frac{P(Z=z,X=x,Y=y)}{P(X=x,Y=y)} =\frac{P(z,x,y)}{P(x,y)}
+$$
+
+$$
+
+$$
 
 ### Simulation
 ```{r}
