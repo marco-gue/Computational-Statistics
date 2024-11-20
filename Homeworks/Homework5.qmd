@@ -1,0 +1,40 @@
+---
+title: "Homework 5"
+subtitle: "Prof: Luiz Peternelli"
+author: "Marco Guerra Hinostroza"
+date: "`r Sys.Date()`"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+    number-sections: false
+    code-fold: false
+    filters:
+        - highlight-text
+editor_options: 
+  chunk_output_type: console
+---
+
+
+## Question 4
+```{r}
+X <- c(10, 20, 30, 40, 50)
+p_X <- c(0.10, 0.45, 0.30, 0.10, 0.05)
+
+plot(X, p_X, type="h", main = "Probability distribution",
+     xlab="Random Variable X",ylab="Probability P(X=x)",
+     font=1,font.lab=1, lwd = 2, ylim = c(0, 0.47))
+```
+
+```{r}
+data <- rep(X, times = p_X * 100)
+
+hist(data, breaks = c(5, 15, 25, 35, 45, 55), ylim = c(0, 0.05),
+     freq = FALSE, col = "#4682B4", border = "black",
+     main = "Histogram of probabilities",
+     xlab = "Random Variable X", ylab = "Probability")
+axis(1, at = seq(5, 55, by = 5), labels = seq(5, 55, by = 5))
+
+```
+
