@@ -16,6 +16,165 @@ editor_options:
   chunk_output_type: console
 ---
 
+## Question 2
+
+#### Probability density function:
+
+$$
+f(x, y, z) = 
+\begin{cases}
+k(x + y + z) \quad ; \quad 0 \le x \le 1 \quad 0 \le y \le 1 \quad 0 \le z \le 1\\
+0 \quad ; \quad c.c
+\end{cases}
+$$
+
+Since the area under the curve is different from 1
+$$
+ \int_0^1 \int_0^1 \int_0^1 k(x+y+z) \, dz\,dy\,dx = 1
+$$
+
+Integrando en relación a z
+$$
+\int_0^1 k(x+y+z) \, dz = k\int_0^1 (x+y+z) \, dz =
+$$
+
+$$
+ k \left[ (x+y)z + \frac{z^2}{2} \right]^1_0 = k\left[ x+y + \frac{1}{2} \right]
+$$
+
+Integrando en relación a y
+
+$$
+\int_0^1 k\left[ x+y + \frac{1}{2} \right] \, dy = k\int_0^1 \left[ x+y + \frac{1}{2} \right] \, dy =
+$$
+
+$$
+ k \left[ xy + \frac{y^2}{2} + \frac{y}{2} \right]^1_0 = k\left[ x+ \frac{1}{2} + \frac{1}{2} \right] = k(x+1)
+$$
+
+Integrando en relación a x
+
+$$
+\int_0^1 k(x+1)\, dx = k\int_0^1(x+1)\, dx = k \left[ \frac{x^2}{2} + x  \right]^1_0 = k \left[ \frac{1}{2} + 1  \right] = k \times \frac{3}{2}
+$$
+
+Agora, fazemos essa integral igual a 1:
+
+$$
+k \times \frac{3}{2} = 1 \Rightarrow k = \frac{2}{3}
+$$
+
+#### f.d.p marginal de X
+
+$$
+ f(x) = \int_0^1 \int_0^1  f(x+y+z) \, dz\,dy \, =  \, \int_0^1 \int_0^1  \frac{2}{3}(x+y+z) \, dz\,dy
+$$
+
+Integramos em relação a z no intervalo [0,1]:
+
+$$
+\frac{2}{3}\int_0^1(x+y+z) \, dz = \frac{2}{3} \left[ (x+y)z + \frac{z^2}{2}  \right]^1_0 = \frac{2}{3} \left[ x+y + \frac{1}{2}  \right]
+$$
+
+Integramos em relação a y no intervalo [0,1]:
+
+$$
+\frac{2}{3}\int_0^1(x+y+ \frac{2}{3}) \, dy = \frac{2}{3} \left[ xy + \frac{y^2}{2} + \frac{y}{2} \right]^1_0 = \frac{2}{3}(x+1)
+$$
+
+A f.d.p. marginal de X é:
+
+$$
+f(x) = \frac{2}{3}(x+1), \quad 0 \le x \le 1
+$$
+
+#### f(x , y)
+
+$$
+f(x,y) = \int_0^1f(x,y,z)\, dz = \frac{2}{3}\int_0^1(x+y+z)dz =
+$$
+
+
+$$
+\frac{2}{3}\left[ (x+y)z + \frac{z^2}{2} \right]^1_0 = \frac{2}{3}\left[x + y + \frac{1}{2} \right]
+$$
+
+$$
+f(x,y) = \frac{2}{3}(x + y + \frac{1}{2})
+$$
+
+
+#### f(y | x)
+
+$$
+f(y|x) = \frac{f(x,y)}{f(x)}
+$$
+
+$$
+f(y|x) = \frac{\frac{2}{3}(x+y+ \frac{1}{2})}{\frac{2}{3}(x+1)} = \frac{x+y+\frac{1}{2}}{x+1}
+$$
+
+#### f(z | x,y)
+
+$$
+f(z|x,y) = \frac{f(x,y,z)}{f(x,y)}
+$$
+
+$$
+f(y|x) = \frac{\frac{2}{3}(x+y+z)}{\frac{2}{3}(x+y+\frac{1}{2})} = \frac{x+y+z}{x+y+\frac{1}{2}}
+$$
+
+#### Distribucao acumulada F(x)
+
+$$
+F(x) = P(X \le x) = \int_0^x f(t)\, dt
+$$
+
+$$
+F(x) = \int_0^x \frac{2}{3}(t+1)\,dt = \frac{2}{3} \left[ \frac{t^2}{2} + t \right]_0^x = \frac{2}{3} \left[ \frac{x^2}{2} + x  \right]
+$$
+
+$$
+F(x) = \frac{1}{3}x^2 + \frac{2}{3}x
+$$
+
+
+#### F(y | x)
+
+$$
+F(y|x) = P(Y \le y \, | \,  X=x) = \int_0^y f(t|x)\, dt
+$$
+
+$$
+F(y|x) = \int_0^y \frac{x+t+\frac{1}{2}}{x+1}\,dt =  \frac{1}{x+1} \int_0^y (x + t + \frac{1}{2})\,dt = 
+$$
+
+$$
+\frac{1}{x+1} \left[ xt + \frac{t^2}{2} + \frac{t}{2} \right]^y_0 = \frac{1}{x+1} \left[ xy + \frac{y^2}{2} + \frac{y}{2} \right]
+$$
+
+$$
+F(y|x) = \frac{xy + \frac{y^2}{2} + \frac{y}{2}}{x+1}
+$$
+
+#### F(z | x,y)
+
+$$
+F(z|x,y) = P(Z \le z \, | \,  X=x, Y=y) = \int_0^z f(t|x,y)\, dt
+$$
+
+$$
+F(z|x,y) = \int_0^z \frac{x+y+t}{x+y+ \frac{1}{2}}\,dt =  \frac{1}{x+y + \frac{1}{2}} \int_0^z (x + y + t)\,dt = 
+$$
+
+$$
+\frac{1}{x+y + \frac{1}{2}} \left[ (x+y)t + \frac{t^2}{2} \right]^z_0 = \frac{1}{x+y + \frac{1}{2}} \left[ (x+y)z + \frac{z^2}{2} \right]
+$$
+
+$$
+F(z|x,y) = \frac{(x+y)z + \frac{z^2}{2}}{x +y + \frac{1}{2}}
+$$
+
 
 ## Question 4
 ```{r}
