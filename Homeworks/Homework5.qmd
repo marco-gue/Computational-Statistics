@@ -197,3 +197,102 @@ axis(1, at = seq(5, 55, by = 5), labels = seq(5, 55, by = 5))
 
 ```
 
+## Question 6
+
+```{r}
+corr<-rbind(c(   1,  .8, -.03),
+            c(  .8,   1,  .04),
+            c( -.03, .04,   1))
+
+variances <- c(1, 16, 1)
+
+# Criando a matriz de covariância
+sigma <- diag(sqrt(variances)) %*% corr %*% diag(sqrt(variances))
+
+# Exibindo a matriz de covariância
+sigma
+```
+
+```{r}
+gera.mult.chol <- function(v.medias, sigma, iteracoes) {
+  mu <- v.medias 
+  fc <- chol(sigma[1:2, 1:2]) 
+  iter <- iteracoes
+  p <- length(fc[1, ]) 
+  variaveis <- matrix(NA, iter, 3)
+
+  for (i in 1:iter) {
+    
+    x <- 3 * runif(1)^2
+    
+    y <- rnorm(1)
+    
+    z <- sample(1:4, size = 1, replace = TRUE, prob = c(0.1, 0.2, 0.3, 0.4))
+    
+    # Standardize X and Y
+    x_std <- x - mu[1]
+    y_std <- y - mu[2]
+    
+    transformed <- c(x_std, y_std) %*% t(fc)
+    
+    variaveis[i, ] <- c(transformed, z) + c(mu[1:2], 0)
+  }
+  
+  return(variaveis)
+}
+```
+
+Define the parameters:
+```{r}
+# Define the parameters
+u <- c(1.5, 10, 2.5) # Adjusted means for X, Y, and Z
+sigma <- matrix(c(1, 0.5, -0.03,
+                  0.5, 16, 0.05,
+                 -0.03, 0.05, 1), ncol = 3) # Covariance matrix
+```
+
+
+```{r}
+set.seed(123)
+j <- gera.mult.chol(v.medias = u, sigma = sigma, iteracoes = 1000)
+```
+
+:::: {.columns}
+
+::: {.column width="40%"}
+Target Covariance Matrix
+```{r}
+sigma
+```
+:::
+
+::: {.column width="2%"}
+:::
+
+::: {.column width="58%"}
+Empirical Covariance Matrix
+```{r}
+cov(j)
+```
+:::
+
+::::
+
+```{r}
+plot(density(j[,1]))
+hist(j[,1],prob=T,add=T)
+boxplot(j[,1])
+
+#fazendo o hist para a variável 3
+max_density <- 1 / (sqrt(2 * pi * sigma[3, 3]))
+hist(j[,3],prob=T, ylim = c(0, max_density * 1.2))
+curve(dnorm(x,mean = 2.5, sd =sqrt(sigma[3,3])),add=T, col = "blue")
+
+# melhor visualização
+library(psych)
+summary(j)
+var(j)
+cor(j,method='pearson')
+pairs.panels(j)
+```
+
