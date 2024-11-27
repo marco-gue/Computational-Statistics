@@ -436,3 +436,109 @@ mean(X)
 mean(X^2) - mean(X)^2
 ```
 
+
+#### Distribution t-Student
+
+
+#### Distribution F-Snedecor
+A distribuição F é uma razão de qui-quadrados:
+
+$$
+F = \frac{\frac{X_u^2}{u}}{\frac{X_v^2}{v}} \quad \rightarrow \quad F \quad \sim \quad F_{\frac{u}{v}}
+$$
+
+Para simular valores de uma distribuição $\mathbf{F}$, basta simular valores de duas qui-quadrados e fazer a razão entre elas:
+
+```{r, message=FALSE}
+iter <- 10000
+u <- 25
+v <- 20
+chi.u <- rchisq(iter, u)
+chi.v <- rchisq(iter, v)
+Fcalc <- (chi.u/u)/(chi.v/v)
+```
+
+
+```{r,echo=FALSE,message=FALSE}
+ggplot() +
+  geom_histogram(aes(x = Fcalc, after_stat(density)), color = "black") +
+  stat_function(fun = function(x) df(x, u-1, v-1),
+                color = "tomato", linewidth = 1.5) +
+  ylab("Densidade") +
+  theme_bw()
+
+ks.test(Fcalc, "pf", df1 = u - 1, df2 = v - 1)
+```
+
+
+Distribution F da razao de variancias de de variaveis normales de uma ima populacao $\sigma^2 \quad \sim \quad \frac{\sigma}{k-1}X^2_{k-1}$
+
+```{r, message=FALSE}
+iter <- 10000
+n1 <- 100
+var1 <- 20
+n2 <- 120
+var2 <- 20
+Fcalc <- NULL
+
+for (i in 1:iter) {
+  amostra1 <- rnorm(n1, 0, sqrt(var1))
+  amostra2 <- rnorm(n2, 0, sqrt(var2))
+  Fcalc[i] <- var(amostra1) / var(amostra2)
+}
+```
+
+
+```{r,echo=FALSE,message=FALSE}
+ggplot() +
+  geom_histogram(aes(x = Fcalc, after_stat(density)), color = "black") +
+  stat_function(fun = function(x) df(x, n1-1, n2-1),
+                color = "tomato", linewidth = 1.5) +
+  ylab("Densidade") +
+  theme_bw()
+
+ks.test(Fcalc, "pf", df1 = n1 - 1, df2 = n2 - 1)
+```
+
+
+What if we deviate from normality? Let's test with the Weibull distribution, using two samples with the same parameter, so that:
+
+```{r, message=FALSE}
+iter <- 10000
+n1 <- 100
+n2 <- 120
+Fcalc <- NULL
+for (i in 1:iter)
+  {
+  weibull1 <- rweibull(n1, shape = 2, scale = 20)
+  weibull2 <- rweibull(n2, shape = 2, scale = 20)
+  Fcalc[i] <- var(weibull1)/var(weibull2)
+}
+```
+
+
+```{r,echo=FALSE,message=FALSE}
+ggplot() +
+  geom_histogram(aes(x = Fcalc, after_stat(density)), color = "black") +
+  stat_function(fun = function(x) df(x, n1-1, n2-1),
+                color = "tomato",linewidth = 1.5) +
+  ylab("Densidade") +
+  theme_bw()
+
+ks.test(Fcalc, "pf", df1 = n1 - 1, df2 = n2 - 1)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
