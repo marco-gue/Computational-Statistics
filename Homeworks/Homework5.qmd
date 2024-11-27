@@ -16,6 +16,12 @@ editor_options:
   chunk_output_type: console
 ---
 
+```{r, include=FALSE}
+library(psych)
+library(ggplot2)
+```
+
+
 ## Question 2
 
 #### Probability density function:
@@ -30,7 +36,7 @@ $$
 
 Since the area under the curve is different from 1
 $$
- \int_0^1 \int_0^1 \int_0^1 k(x+y+z) \, dz\,dy\,dx = 1
+b \int_0^1 \int_0^1 \int_0^1 k(x+y+z) \, dz\,dy\,dx = 1
 $$
 
 Integrando en relación a z
@@ -309,5 +315,124 @@ j[, 1] <- j[, 1]^(1/3)
 
 # Ajustar os valores para o intervalo (0, 3)
 j[, 1] <- j[, 1] * 3
+```
+
+## Question 10
+
+#### Distribucion x2
+A distribuição da estatística qui-quadrado com *k* graus de liberdade é derivada da soma de quadrados de *k*
+variáveis normais padrão $[ex.: Z ∼ N(0, 1)]$:
+
+$$
+X^2 = Z_1^2 + Z_1^2 + Z_1^2 + ... + Z_1^2 \quad ; X^2 \sim X_k^2
+$$
+
+A função padrão utiliza essa propriedade para gerar valores que seguem essa distribuição amostral. Simulando, por exemplo, 10 observações normais padrão:
+
+```{r}
+iter<-1000
+X<-NULL
+for (i in 1:iter)
+  {
+  k<-10
+  z<-rnorm(k)
+  X[i]<-sum(z^2)
+}
+```
+
+Vamos checar se os valores gerados seguem o desejado. Primeiro, verificamos o histograma:
+
+```{r}
+ggplot() +
+  geom_histogram(aes(x = X, after_stat(density)), color = "black") +
+  stat_function(fun = function(x) dchisq(x,k), color = "tomato", linewidth = 1.5) +
+  ylab("Density") +
+  theme_bw()
+
+```
+
+Também podemos verificar se as estimativas dos parâmetros média e variância seguem o esperado. A esperança da FDP da qui-quadrado é igual ao número de graus de liberdade que deu origem à distribuição, enquanto a variância corresponde à este mesmo número multiplicado por dois.
+
+Mean
+```{r}
+mean(X)
+```
+
+Variance
+```{r}
+mean(X^2) - mean(X)^2
+```
+
+
+Como tanto $E(X)$ quanto $V(X)$ são próximos do valor esperado (10 e 20, respectivamente), conclui-se que a simulação foi bem sucedida em gerar valores que seguem a distribuição amostral em questão.
+
+Vejamos o que acontece quando simulamos amostras de uma normal não-padrão. Vamos considerar uma média de 10 e uma variância de 8:
+
+```{r}
+iter<-1000
+X<-NULL
+mu = 10
+vari = 8
+for (i in 1:iter)
+  {
+  k<-10
+  z<-rnorm(k, mean = mu, sd = sqrt(vari))
+  X[i]<-sum(z^2)
+}
+```
+
+Vejamos se os valores seguem o que é esperado:
+
+```{r}
+ggplot() +
+  geom_histogram(aes(x = X, y = after_stat(density)), color = "black") +
+  stat_function(fun = function(x) dchisq(x,k), color = "tomato", linewidth = 1.5) +
+  xlim(0, max(X)) +
+  ylab("Density") +
+  theme_bw()
+```
+
+```{r}
+mean(X)
+```
+
+```{r}
+mean(X^2) - mean(X)^2
+```
+
+Ao fugir da pressuposição da normalidade-padrão, o protocolo utilizado para simulação não gera valores que seguem a distribuição qui-quadrado. Ainda assim, é possível gerar valores de tal distribuição utilizando observações advindas de normais não-padrão. Para isto, basta padronizar as observações, isto é:
+
+$$
+\frac{\sum_{i=1}^k(x_i - \overline{x})}{\sigma^2} \sim X^2_k
+$$
+
+```{r}
+iter<-1000
+X<-NULL
+mu = 10
+vari = 8
+for (i in 1:iter)
+  {
+  k<-10 
+  z<-rnorm(k, mean = mu, sd = sqrt(vari))
+  X[i]<-sum((z-mu)^2)/vari
+}
+```
+
+```{r}
+ggplot() +
+  geom_histogram(aes(x = X, y = after_stat(density)), color = "black") +
+  stat_function(fun = function(x) dchisq(x,k), color = "tomato", linewidth = 1.5) +
+  xlim(0, max(X)) +
+  ylab("Density") +
+  theme_bw()
+```
+
+```{r}
+mean(X)
+```
+
+```{r}
+mean(X^2) - mean(X)^2
 ```
 
