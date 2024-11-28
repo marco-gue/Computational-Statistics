@@ -317,17 +317,81 @@ j[, 1] <- j[, 1]^(1/3)
 j[, 1] <- j[, 1] * 3
 ```
 
+## Question 9
+
+$$
+X = \{2,5,3,7,6,6,5,6,7,9\}
+$$
+
+#### Discrete empirical distribution
+
+$$
+F_n(X)=
+\begin{cases}
+0 \quad se \quad z < y_i\\
+\frac{1}{n} \quad se \quad y_i \le x \le y_n \\
+1 \quad se \quad x >y_n
+\end{cases}
+$$
+
+```{r}
+X <- c(2, 5, 3, 7, 6, 6, 5, 6, 7, 9)
+X <- sort(X)
+prob_ac <- cumsum(table(X)/length(X))
+plot(ecdf(prob_ac), xlim = c(0,1),
+main = "Discrete empirical distribution")
+```
+
+```{r}
+sim <- NULL
+for (i in 1:10000)
+  {
+  u <- runif(1)
+  sim[i] <- as.numeric(names(which(u <= prob_ac)[1]))
+}
+plot(ecdf(cumsum(table(sim)/length(sim))), xlim = c(0,1),
+main = "Discrete empirical distribution (10000 simulations)")
+```
+
+#### Continuous empirical distribution
+
+$$
+F_n(X)=
+\begin{cases}
+0 \quad ; \quad z < y_i\\
+\frac{i+1}{n-1} + \frac{x - X_i}{(n-1)(X_{i+i} - X_i)} \quad ; \quad y_i \le x \le y_n \\
+1 \quad ; \quad x >y_n
+\end{cases}
+$$
+
+to $i = 1, 2, . . . , n − 1$
+
+The algorithm consists of simulating the value of a uniform $[u ∼ unif(0, 1)]$ and using this value in $P = n-1\times u$, where n is the number of elements in X. From P, we obtain $\mathbf{I}$, which consists of an integer by rounding P down. The simulated value is finally obtained by making $y = X_{[I]} + (P -I + 1)(X_{[I+1]} - X_{[I]})$:
+
+```{r}
+y_sim = NULL
+u = NULL
+for (i in 1:10000) {
+u[i] = runif(1)
+P = (length(X)-1)*u[i]
+I = floor(P)+1
+y_sim[i] = X[I] + (P-I+1) * (X[I+1]-X[I])
+}
+plot(y_sim, u, main = "Continuous empirical distribution (10000 simulations)",
+xlab = "Simulated values", ylab = "F(x)")
+```
+
+
 ## Question 10
 
-#### Distribucion x2
-A distribuição da estatística qui-quadrado com *k* graus de liberdade é derivada da soma de quadrados de *k*
-variáveis normais padrão $[ex.: Z ∼ N(0, 1)]$:
+#### Chi-square ($X^2$) distribution
+The distribution of the chi-squared statistic with k degrees of freedom is derived from the sum of squares of k standard normal variables $[e.g. Z ∼ N(0, 1)]$:
 
 $$
-X^2 = Z_1^2 + Z_1^2 + Z_1^2 + ... + Z_1^2 \quad ; X^2 \sim X_k^2
+X^2 = Z_1^2 + Z_2^2 + Z_3^2 + ... + Z_k^2 \quad ; \quad X^2 \sim X_k^2
 $$
 
-A função padrão utiliza essa propriedade para gerar valores que seguem essa distribuição amostral. Simulando, por exemplo, 10 observações normais padrão:
+The standard function uses this property to generate values that follow this sampling distribution. Simulating, for example, 10 standard normal observations:
 
 ```{r}
 iter<-1000
@@ -340,33 +404,42 @@ for (i in 1:iter)
 }
 ```
 
-Vamos checar se os valores gerados seguem o desejado. Primeiro, verificamos o histograma:
+Let's check that the values generated are as desired. First, we check the histogram:
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 ggplot() +
   geom_histogram(aes(x = X, after_stat(density)), color = "black") +
   stat_function(fun = function(x) dchisq(x,k), color = "tomato", linewidth = 1.5) +
   ylab("Density") +
   theme_bw()
-
 ```
 
-Também podemos verificar se as estimativas dos parâmetros média e variância seguem o esperado. A esperança da FDP da qui-quadrado é igual ao número de graus de liberdade que deu origem à distribuição, enquanto a variância corresponde à este mesmo número multiplicado por dois.
+We can also check that the estimates of the mean and variance parameters are as expected. The expectation of the chi-squared $\mathbf{FDP}$ is equal to the number of degrees of freedom that gave rise to the distribution, while the variance corresponds to this same number multiplied by two.
 
+:::: {.columns}
+
+::: {.column width="40%"}
 Mean
 ```{r}
 mean(X)
 ```
+:::
 
+::: {.column width="2%"}
+:::
+
+::: {.column width="58%"}
 Variance
 ```{r}
 mean(X^2) - mean(X)^2
 ```
+:::
 
+::::
 
-Como tanto $E(X)$ quanto $V(X)$ são próximos do valor esperado (10 e 20, respectivamente), conclui-se que a simulação foi bem sucedida em gerar valores que seguem a distribuição amostral em questão.
+As both $E(X)$ and $V(X)$ are close to the expected value (10 and 20, respectively), we conclude that the simulation was successful in generating values that follow the sampling distribution in question.
 
-Vejamos o que acontece quando simulamos amostras de uma normal não-padrão. Vamos considerar uma média de 10 e uma variância de 8:
+Let's see what happens when we simulate samples from a non-standard normal. Let's consider a mean of 10 and a variance of 8:
 
 ```{r}
 iter<-1000
@@ -381,9 +454,9 @@ for (i in 1:iter)
 }
 ```
 
-Vejamos se os valores seguem o que é esperado:
+Let's see if the values follow what is expected:
 
-```{r}
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
 ggplot() +
   geom_histogram(aes(x = X, y = after_stat(density)), color = "black") +
   stat_function(fun = function(x) dchisq(x,k), color = "tomato", linewidth = 1.5) +
@@ -392,15 +465,28 @@ ggplot() +
   theme_bw()
 ```
 
+:::: {.columns}
+
+::: {.column width="40%"}
+Mean
 ```{r}
 mean(X)
 ```
+:::
 
+::: {.column width="2%"}
+:::
+
+::: {.column width="58%"}
+Variance
 ```{r}
 mean(X^2) - mean(X)^2
 ```
+:::
 
-Ao fugir da pressuposição da normalidade-padrão, o protocolo utilizado para simulação não gera valores que seguem a distribuição qui-quadrado. Ainda assim, é possível gerar valores de tal distribuição utilizando observações advindas de normais não-padrão. Para isto, basta padronizar as observações, isto é:
+::::
+
+By deviating from the standard normality assumption, the protocol used for the simulation does not generate values that follow the chi-square distribution. However, it is possible to generate values from the chi-squared distribution using non-standard normal observations. To do so, it is sufficient to normalise the observations, i.e.
 
 $$
 \frac{\sum_{i=1}^k(x_i - \overline{x})}{\sigma^2} \sim X^2_k
@@ -409,8 +495,8 @@ $$
 ```{r}
 iter<-1000
 X<-NULL
-mu = 10
-vari = 8
+mu <- 10
+vari <- 8
 for (i in 1:iter)
   {
   k<-10 
@@ -419,7 +505,7 @@ for (i in 1:iter)
 }
 ```
 
-```{r}
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
 ggplot() +
   geom_histogram(aes(x = X, y = after_stat(density)), color = "black") +
   stat_function(fun = function(x) dchisq(x,k), color = "tomato", linewidth = 1.5) +
@@ -428,26 +514,224 @@ ggplot() +
   theme_bw()
 ```
 
+:::: {.columns}
+
+::: {.column width="40%"}
+Mean
 ```{r}
 mean(X)
 ```
+:::
 
+::: {.column width="2%"}
+:::
+
+::: {.column width="58%"}
+Variance
 ```{r}
 mean(X^2) - mean(X)^2
 ```
+:::
+
+::::
 
 
 #### Distribution t-Student
+Values that follow a t-distribution with *k* degrees of freedom can be simulated indirectly using simulated values from a standard normal distribution and a chi-squared distribution:
 
+$$
+t = \frac{Z}{\sqrt{\frac{X^2}{k}}}
+$$
+
+Using this ratio, the FDP of the t-distribution will have zero expectation and variance equal to $\frac{k}{k-2}$ for $k > 2$. Let's look at the corresponding code:
+
+```{r}
+iter <- 10000
+k <- 25
+z <- rnorm(iter)
+chi <- rchisq(iter, df = 25)
+X <- z/sqrt(chi/k)
+```
+
+```{r,echo=FALSE,message=FALSE}
+ggplot() +
+  geom_histogram(aes(x = X, after_stat(density)), color = "black") +
+  stat_function(fun = function(x) dt(x,k), color = "tomato",linewidth = 1.5) +
+  ylab("Density") +
+  theme_bw()
+```
+
+:::: {.columns}
+
+::: {.column width="40%"}
+Mean
+```{r}
+mean(X)
+```
+:::
+
+::: {.column width="2%"}
+:::
+
+::: {.column width="58%"}
+Variance
+```{r}
+mean(X^2) - mean(X)^2
+```
+:::
+
+::::
+
+What if we used values from a non-standard normal in the denominator of t?
+
+```{r}
+iter <- 10000
+k <- 25
+mu <- 10
+vari <- 8
+z <- rnorm(iter, mean = mu, sd = sqrt(vari))
+chi <- rchisq(iter, df = 25)
+X <- z/sqrt(chi/k)
+```
+
+```{r,echo=FALSE,message=FALSE}
+ggplot() +
+  geom_histogram(aes(x = X, after_stat(density)), color = "black") +
+  stat_function(fun = function(x) dt(x,k), color = "tomato", linewidth = 1.5) +
+  ylab("Density") +
+  theme_bw()
+```
+
+:::: {.columns}
+
+::: {.column width="40%"}
+Mean
+```{r}
+mean(X)
+```
+:::
+
+::: {.column width="2%"}
+:::
+
+::: {.column width="58%"}
+Variance
+```{r}
+mean(X^2) - mean(X)^2
+```
+:::
+
+::::
+
+The values are different from those expected. In this situation, you can use another estimator for the t-statistic:
+
+$$
+t = \frac{\overline{x}-u}{\frac{s}{\sqrt{k}}}
+$$
+
+In this case:
+
+$$
+t \quad ; \quad t_{k-1}
+$$
+
+```{r}
+iter <- 10000
+k <- 25
+mu <- 10
+vari <- 8
+X <- NULL
+for (i in 1:iter)
+  {
+  z <- rnorm(k, mean = mu, sd = sqrt(vari))
+  X[i] <- (mean(z) - mu)/(sqrt(vari)/sqrt(k))
+}
+```
+
+```{r,echo=FALSE,message=FALSE}
+ggplot() +
+  geom_histogram(aes(x = X, after_stat(density)), color = "black") +
+  stat_function(fun = function(x) dt(x, k-1),
+                color = "tomato", linewidth = 1.5) +
+  ylab("Density") +
+  theme_bw()
+```
+
+:::: {.columns}
+
+::: {.column width="40%"}
+Mean
+```{r}
+mean(X)
+```
+:::
+
+::: {.column width="2%"}
+:::
+
+::: {.column width="58%"}
+Variance
+```{r}
+mean(X^2) - mean(X)^2
+```
+:::
+
+::::
+
+The t-distribution is closely related to the normal distribution. It is interesting because it has longer and heavier ranges than the standard normal distribution, depending on the degrees of freedom. Therefore, the t-distribution is useful for simulating data with a higher frequency of extreme values. Let's see what happens if we deviate from normality when simulating the data. We'll use the Poisson distribution in this example:
+
+```{r}
+iter <- 10000
+k <- 25
+mu <- 10
+vari <- 8
+X <- NULL
+for (i in 1:iter)
+  {
+  z = rpois(k, lambda = mu)
+  X[i] = (mean(z) - mu)/(sqrt(vari)/sqrt(k))
+}
+```
+
+```{r,echo=FALSE,message=FALSE}
+ggplot() +
+  geom_histogram(aes(x = X, after_stat(density)), color = "black") +
+  stat_function(fun = function(x) dt(x, k-1), color = "tomato", linewidth = 1.5) +
+  ylab("Density") +
+  theme_bw()
+```
+
+:::: {.columns}
+
+::: {.column width="40%"}
+Mean
+```{r}
+mean(X)
+```
+:::
+
+::: {.column width="2%"}
+:::
+
+::: {.column width="58%"}
+Variance
+```{r}
+mean(X^2) - mean(X)^2
+```
+:::
+
+::::
+
+In this example, the t-distribution resembled the Poisson distribution with $\mathbf{\lambda} = 10$. In this distribution, it is assumed that $E(X) = V(X) = \mathbf{\lambda}$.  In this example, the use of the Poisson distribution will not harm the inferences.
 
 #### Distribution F-Snedecor
-A distribuição F é uma razão de qui-quadrados:
+The F distribution is a chi-squared ratio:
 
 $$
 F = \frac{\frac{X_u^2}{u}}{\frac{X_v^2}{v}} \quad \rightarrow \quad F \quad \sim \quad F_{\frac{u}{v}}
 $$
 
-Para simular valores de uma distribuição $\mathbf{F}$, basta simular valores de duas qui-quadrados e fazer a razão entre elas:
+To simulate values from a $\mathbf{F}$ distribution, just simulate values from two chi-squares and calculate the ratio between them:
 
 ```{r, message=FALSE}
 iter <- 10000
@@ -464,21 +748,21 @@ ggplot() +
   geom_histogram(aes(x = Fcalc, after_stat(density)), color = "black") +
   stat_function(fun = function(x) df(x, u-1, v-1),
                 color = "tomato", linewidth = 1.5) +
-  ylab("Densidade") +
+  ylab("Density") +
   theme_bw()
 
 ks.test(Fcalc, "pf", df1 = u - 1, df2 = v - 1)
 ```
 
 
-Distribution F da razao de variancias de de variaveis normales de uma ima populacao $\sigma^2 \quad \sim \quad \frac{\sigma}{k-1}X^2_{k-1}$
+In the case of normal variables. F-distribution of the ratio of variances of different samples from the same population, it is known that $\quad$ $\sigma^2 \quad \sim \quad \frac{\sigma}{k-1}X^2_{k-1}$
 
 ```{r, message=FALSE}
 iter <- 10000
 n1 <- 100
-var1 <- 20
+var1 <- 10
 n2 <- 120
-var2 <- 20
+var2 <- 10
 Fcalc <- NULL
 
 for (i in 1:iter) {
@@ -494,51 +778,38 @@ ggplot() +
   geom_histogram(aes(x = Fcalc, after_stat(density)), color = "black") +
   stat_function(fun = function(x) df(x, n1-1, n2-1),
                 color = "tomato", linewidth = 1.5) +
-  ylab("Densidade") +
+  ylab("Density") +
   theme_bw()
 
 ks.test(Fcalc, "pf", df1 = n1 - 1, df2 = n2 - 1)
 ```
 
 
-What if we deviate from normality? Let's test with the Weibull distribution, using two samples with the same parameter, so that:
+What if we deviate from normality? Let's test with the Weibull distribution, using two samples with the same shape parameter, so that:
 
 ```{r, message=FALSE}
+set.seed(25)
 iter <- 10000
 n1 <- 100
 n2 <- 120
 Fcalc <- NULL
 for (i in 1:iter)
   {
-  weibull1 <- rweibull(n1, shape = 2, scale = 20)
-  weibull2 <- rweibull(n2, shape = 2, scale = 20)
+  weibull1 <- rweibull(n1, shape = 5, scale = 20)
+  weibull2 <- rweibull(n2, shape = 5, scale = 20)
   Fcalc[i] <- var(weibull1)/var(weibull2)
 }
 ```
-
 
 ```{r,echo=FALSE,message=FALSE}
 ggplot() +
   geom_histogram(aes(x = Fcalc, after_stat(density)), color = "black") +
   stat_function(fun = function(x) df(x, n1-1, n2-1),
                 color = "tomato",linewidth = 1.5) +
-  ylab("Densidade") +
+  ylab("Density") +
   theme_bw()
 
 ks.test(Fcalc, "pf", df1 = n1 - 1, df2 = n2 - 1)
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Interestingly, when the shape parameter of the Weibull distribution is equal to 3, the values generated by simulation follow a distribution F
