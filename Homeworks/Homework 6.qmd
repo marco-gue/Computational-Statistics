@@ -745,17 +745,214 @@ prob8 <- function(n)
 prob8(1000) 
 ```
 
-#### Question 09
-```{r}
 
-```
+#### Question 09
 
 #### Question 10
 
+**São misturadas novamente após cada tentativa falha**
+
+Se as chaves são misturadas novamente após cada tentativa falha, cada tentativa é independente, e a probabilidade de escolher a chave correta é sempre $\frac{1}{4}$. Então a probabilidade de falhar em uma tentativa é $\frac{3}{4}$
+
+Para que sejam necessárias mais de 3 tentativas, a pessoa precisa falhar nas 3 primeiras tentativas.
+
+Espaço amostral ($\mathbf{S}$): Todas as sequências de tentativas até que a porta seja aberta.
+
+Evento ($\mathbf{A}$): Todas as sequências com pelo menos 3 falhas antes do primeiro sucesso.
+
+A probabilidade de falhar em 3 tentativas consecutivas é:
+$$
+P = \left( \frac{3}{4} \right)^3 = \frac{27}{64}
+$$
+
+**São separadas após cada tentativa falha**
+
+$$
+S = \{(n,n,n,s),(n,n,s,n),(n,s,n,n),(s,n,n,n) \}
+$$
+
+$$
+A = \{(n,n,n,s)\}
+$$
+
+$$
+P(A) = \frac{1}{4} = 0.25
+$$
+
 #### Question 11
 
+**São misturadas novamente após cada tentativa falha**
+
+```{r}
+prob11a <- function(n)
+  {
+  saida <- seq(1:n)
+  chaves1 <- c(1,1,1,0)
+  
+  for(i in 1:n)
+    {
+    chaves2 <- sample(chaves1,replace=TRUE)
+    a <- chaves2[1]
+    b <- chaves2[2]
+    d <- chaves2[3]
+    cbind(a,b,d)
+    if(a==0){saida[i]="probabilidade1"}
+    if(a==1 & b==0) {saida[i]="probabilidade2"}
+    if(a==1 & b==1 & d==0 ){saida[i]="probabilidade3"} 
+    if(a==1 & b==1 & d==1 ){saida[i]="probabilidade4"}
+  }
+  
+  saida2 <- 1*(saida=="probabilidade1")
+  saida3 <- 1*(saida=="probabilidade2")
+  saida4 <- 1*(saida=="probabilidade3")
+  saida5 <- ((saida2)/n)+((saida3)/n)+((saida4)/n)
+  probabilidadeab <- 1-sum(saida5)
+  
+  return(probabilidadeab)
+}
+```
+
+```{r}
+prob11a(1000)
+```
+
+**São separadas após cada tentativa falha**
+
+```{r}
+prob11b <- function(n)
+  {
+  saida <- seq(1:n)
+  chaves1 <- c(1,1,1,0)
+  
+  for(i in 1:n)
+    {
+    chaves2 <- sample(chaves1,replace=FALSE)
+    a <- chaves2[1]
+    b <- chaves2[2]
+    d <- chaves2[3]
+    cbind(a,b,d)
+    if(a==0){saida[i]="probabilidade1"}
+    if(a==1 & b==0) {saida[i]="probabilidade2"}
+    if(a==1 & b==1 & d==0 ){saida[i]="probabilidade3"} 
+    if(a==1 & b==1 & d==1 ){saida[i]="probabilidade4"}
+  }
+  
+  saida2 <- 1*(saida=="probabilidade1")
+  saida3 <- 1*(saida=="probabilidade2")
+  saida4 <- 1*(saida=="probabilidade3")
+  saida5 <- ((saida2)/n)+((saida3)/n)+((saida4)/n)
+  probabilidadeab <- 1-sum(saida5)
+  
+  return(probabilidadeab)
+}
+```
+
+```{r}
+prob11b(1000)
+```
+
 #### Question 12
+
+- Existem 3 caixas: $\mathbf{A}$, $\mathbf{B}$, $\mathbf{C}$.
+
+- Uma contém o prêmio, e as outras duas estão vazias.
+
+- O jogador escolhe inicialmente uma caixa (vamos supor que escolheu $\mathbf{A}$).
+
+**Probabilidades iniciais**
+
+- A probabilidade de o prêmio estar em $\mathbf{A}$ é: 
+
+$$
+P(A) = \frac{1}{3}
+$$
+
+- A probabilidade de o prêmio estar nas outras duas caixas (  $\mathbf{B}$ ou $\mathbf{C}$) é:
+
+$$
+P(B \cup C) = \frac{2}{3}
+$$
+
+#### Question 13
+```{r}
+prob13=function(n)
+  {
+  saida <- seq(1:n)
+  caixa <- c(1,2,3)
+  
+  for(i in 1:n)
+    {
+    caixa2 <- sample(caixa,replace=TRUE)
+    a <- caixa2[1]
+    b <- caixa2[2]
+    comparar <- a==b
+    cbind(a,b,comparar)
+    
+    if(comparar==TRUE){saida[i]="SIM"} else {saida[i]="NAO"}
+    }
+  saida2 <- 1*(saida=="NAO")
+  saida3 <- sum(saida2)
+  probab <- (saida3)/n
+  return(probab)
+}
+```
+
+```{r}
+prob13(10000)
+```
+
 
 ## Introdução à teoria de probabilidade
 
 ## Se as v.a. X e Y são independentes
+
+### $E(XY) = E(X)E(Y)$
+
+```{r}
+sim <- function(n)
+  {
+  X <- rnorm(n, mean = 5, sd = 2)
+  Y <- rnorm(n, mean = 10, sd = 3)
+  EX <- mean(X)
+  EY <- mean(Y)
+  result <- list(
+    EXY = mean(X * Y),
+    EX = EX,
+    EY = EY,
+    EX_EY = EX*EY)
+}
+```
+
+```{r}
+s <- sim(10000)
+s$EXY
+s$EX_EY
+```
+
+### $E(\frac{X}{Y}) \neq \frac{E(X)}{E(Y)}$
+
+```{r}
+sim <- function(n)
+  {
+  X <- rnorm(n, mean = 5, sd = 2)
+  Y <- rnorm(n, mean = 10, sd = 3)
+  EX <- mean(X)
+  EY <- mean(Y)
+  result <- list(
+    E_XdivY = mean(X / Y),
+    EX = EX,
+    EY = EY,
+    EX_div_EY = EX/EY)
+}
+```
+
+```{r}
+s1 <- sim(10000)
+s1$E_XdivY
+s1$EX_div_EY
+```
+
+
+
+
+
