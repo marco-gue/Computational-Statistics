@@ -18,7 +18,7 @@ editor_options:
 
 ## Tópicos de probabilidade
 
-#### Question 01
+### Question 01
 
 $$
 c = \{m,m,f,f\}
@@ -76,7 +76,7 @@ return(proporcao)
 prob1b(1000)
 ```
 
-#### Question 02
+### Question 02
 
 $$
 c = \{m,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f\}
@@ -134,7 +134,7 @@ return(proporcao)
 prob2b(1000)
 ```
 
-#### Question 03
+### Question 03
 
 **prob1a**
 ```{r}
@@ -192,7 +192,7 @@ lines(pontox,y)
 abline(h=0.90,lty=3,col="red")
 ```
 
-#### Question 04
+### Question 04
 ```{r}
 simulaMx <- function(numero.de.simulacoes,funcao.inicial,numero.de.iteracoes)
   {
@@ -209,7 +209,7 @@ simulaMx <- function(numero.de.simulacoes,funcao.inicial,numero.de.iteracoes)
 }
 ```
 
-### prob1a
+#### prob1a
 :::: {.columns}
 
 ::: {.column width="49%"}
@@ -319,7 +319,7 @@ abline(v=mean(j8)+sd(j8),col="blue", lty = "dashed")
 
 ::::
 
-### prob1b
+#### prob1b
 :::: {.columns}
 
 ::: {.column width="49%"}
@@ -429,7 +429,7 @@ abline(v=mean(j8)+sd(j8),col="blue", lty = "dashed")
 
 ::::
 
-### prob2a
+#### prob2a
 :::: {.columns}
 
 ::: {.column width="49%"}
@@ -539,7 +539,7 @@ abline(v=mean(j8)+sd(j8),col="blue", lty = "dashed")
 
 ::::
 
-### prob2b
+#### prob2b
 :::: {.columns}
 
 ::: {.column width="49%"}
@@ -649,7 +649,7 @@ abline(v=mean(j8)+sd(j8),col="blue", lty = "dashed")
 
 ::::
 
-#### Question 05
+### Question 05
 
 $$
 S = \{(x_1,x_2) | x_1,x_2 \in \{1,2,3,4,5,6\} \}
@@ -671,7 +671,7 @@ $$
 P(A) = \frac{4}{36} = \frac{1}{9} = 0.111111
 $$
 
-#### Question 06
+### Question 06
 ```{r}
 prob6 <- function(n)
   {
@@ -690,7 +690,7 @@ prob6 <- function(n)
 prob6(1000)
 ```
 
-#### Question 07
+### Question 07
 
 $$
 S_1 = \{(C,C,C),(C,C,K),(C,K,C),(C,K,K),\\(K,C,C),(K,C,K),(K,K,C),(K,K,K)\}
@@ -713,30 +713,34 @@ $$
 P(A_1 \cap A_2) = \frac{3}{8} \times \frac{3}{6} = \frac{3}{16} = 0.1875
 $$
 
-#### Question 08
+### Question 08
 ```{r}
 prob8 <- function(n)
   {
-  n <- 200
   saida <- NULL
+  
   moeda1 <- sample(c(0,1), n, replace=TRUE)
   moeda2 <- sample(c(0,1), n, replace=TRUE) 
   moeda3 <- sample(c(0,1), n, replace=TRUE)
-  dado <- sample(c(1,2,3,4,5,6))
+  
   moedas <- cbind(moeda1,moeda2,moeda3) 
   soma <- moedas[,1]+moedas[,2]+moedas[,3]
   soma1 <- moeda1+moeda2+moeda3
   soma2 <- mean(soma==2)
   
+  dado <- sample(c(1,2,3,4,5,6))
   for(i in 1:n)
     {
     amostradado <- sample(dado)
     x <- amostradado[1]
     if (x==2|x==4|x==6){saida[i]="par"} else{saida[i]= "impar"}
-    }
+  }
+  
   saida2 <- 1*(saida=="impar")
   saida3 <- (saida2)/n
+  
   probabilidade <- sum(soma2*saida3)
+  
   return(probabilidade)
 }
 ```
@@ -746,9 +750,62 @@ prob8(1000)
 ```
 
 
-#### Question 09
+### Question 09
 
-#### Question 10
+**(Question 05)**
+```{r}
+prob6_viciado <- function(n) {
+
+  faces <- 1:6
+  pesos <- c(1, 2, 1, 2, 1, 2) / sum(c(1, 2, 1, 2, 1, 2))
+  
+  x1 <- sample(faces, n, replace = TRUE, prob = pesos)
+  x2 <- sample(faces, n, replace = TRUE, prob = pesos)
+  
+  evento <- (x1 < 3) & (x2 < 3)
+  
+  probabilidade <- sum(evento) / n
+  
+  return(probabilidade)
+}
+```
+
+```{r}
+prob6_viciado(10000)
+```
+
+
+**(Question 07)**
+
+```{r}
+prob8_viciado <- function(n) {
+  
+  moeda1 <- sample(c(0, 1), n, replace = TRUE)
+  moeda2 <- sample(c(0, 1), n, replace = TRUE)
+  moeda3 <- sample(c(0, 1), n, replace = TRUE)
+  soma_moedas <- moeda1 + moeda2 + moeda3
+  evento_moedas <- soma_moedas == 1
+  
+  faces <- 1:6
+  pesos <- c(1, 2, 1, 2, 1, 2) / sum(c(1, 2, 1, 2, 1, 2))
+  dado <- sample(faces, n, replace = TRUE, prob = pesos)
+  evento_dado <- dado %% 2 == 1
+  
+  evento_total <- evento_moedas & evento_dado
+  
+  probabilidade <- sum(evento_total) / n
+  
+  return(probabilidade)
+}
+
+```
+
+```{r}
+prob8_viciado(10000)
+```
+
+
+### Question 10
 
 **São misturadas novamente após cada tentativa falha**
 
@@ -779,7 +836,7 @@ $$
 P(A) = \frac{1}{4} = 0.25
 $$
 
-#### Question 11
+### Question 11
 
 **São misturadas novamente após cada tentativa falha**
 
@@ -851,7 +908,7 @@ prob11b <- function(n)
 prob11b(1000)
 ```
 
-#### Question 12
+### Question 12
 
 - Existem 3 caixas: $\mathbf{A}$, $\mathbf{B}$, $\mathbf{C}$.
 
@@ -873,7 +930,31 @@ $$
 P(B \cup C) = \frac{2}{3}
 $$
 
-#### Question 13
+**Após abrir uma caixa vazia**
+
+- O prêmio estiver na caixa:
+
+$$
+P(A) = \frac{1}{3}
+$$
+
+- O prêmio está na outra caixa:
+
+$$
+P(B) = \frac{2}{3} \quad or \quad P(C) = \frac{2}{3}
+$$
+
+**Conclusão**
+Matematicamente, as probabilidades mostram que:
+
+- Trocar: $P = \frac{2}{3}$ (vantagem)
+
+- Não trocar: $P = \frac{1}{3}$
+
+Portanto, **é mais vantajoso trocar de caixa!**
+
+### Question 13
+
 ```{r}
 prob13=function(n)
   {
@@ -904,9 +985,57 @@ prob13(10000)
 
 ## Introdução à teoria de probabilidade
 
+```{r}
+simulacao <- function(n)
+  {
+  fornecedores <- c("A", "B", "C")
+  proporcoes <- c(0.3, 0.3, 0.4) # Proporção dos fornecedores
+  prob_ruim <- c(0.1, 0.05, 0.02) # Probabilidade de produto ruim
+  
+  produtos <- sample(fornecedores, size = n, replace = TRUE, prob = proporcoes)
+  
+  # Simulação de qualidade
+  ruim <- rep(FALSE, n)
+  ruim[produtos == "A"] <- runif(sum(produtos == "A")) < prob_ruim[1]
+  ruim[produtos == "B"] <- runif(sum(produtos == "B")) < prob_ruim[2]
+  ruim[produtos == "C"] <- runif(sum(produtos == "C")) < prob_ruim[3]
+  
+  # Resultados
+  # A) Probabilidade do produto ser ruim
+  prob_produto_ruim <- mean(ruim)
+  
+  # B) Probabilidade de ser do fornecedor B dado que é ruim
+  prod_ruins <- produtos[ruim]
+  prob_B_dado_ruim <- mean(prod_ruins == "B")
+  
+  # C) Fornecedor mais provável para reclamação
+  mais_provavel_reclamacao <- names(which.max(table(prod_ruins)))
+  
+  # Retornar os resultados como uma lista
+  return(list(
+    prob_produto_ruim = prob_produto_ruim,
+    prob_B_dado_ruim = prob_B_dado_ruim,
+    mais_provavel_reclamacao = mais_provavel_reclamacao
+  ))
+}
+
+resultados <- simulacao(10000)
+```
+
+
+Resultados:
+
+```{r}
+cat("A) Probabilidade do produto ser ruim:", resultados$prob_produto_ruim, "\n")
+cat("B) Probabilidade de ser do fornecedor B dado que é ruim:", resultados$prob_B_dado_ruim, "\n")
+cat("C) Fornecedor mais provável para reclamação:", resultados$mais_provavel_reclamacao, "\n")
+
+```
+
+
 ## Se as v.a. X e Y são independentes
 
-### $E(XY) = E(X)E(Y)$
+#### $E(XY) = E(X)E(Y)$
 
 ```{r}
 sim <- function(n)
@@ -929,7 +1058,7 @@ s$EXY
 s$EX_EY
 ```
 
-### $E(\frac{X}{Y}) \neq \frac{E(X)}{E(Y)}$
+#### $E(\frac{X}{Y}) \neq \frac{E(X)}{E(Y)}$
 
 ```{r}
 sim <- function(n)
