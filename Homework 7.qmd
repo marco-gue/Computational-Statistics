@@ -1,0 +1,17 @@
+---
+title: "Homework 7"
+subtitle: "Prof: Luiz Peternelli"
+author: "Marco Guerra Hinostroza"
+date: "`r Sys.Date()`"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+    number-sections: false
+    code-fold: false
+    filters:
+        - highlight-text
+editor_options: 
+  chunk_output_type: console
+---
