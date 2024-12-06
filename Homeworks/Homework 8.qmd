@@ -16,23 +16,140 @@ editor_options:
   chunk_output_type: console
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
+```{r, include=FALSE}
+library(ggplot2)
+library(ggalt)
+library(SimDesign)
+library(tidyverse)
+library("gridExtra")
 ```
 
-You can add options to executable code like this
+
+## K-Nearest Neighbors (KNN)
+
+## Question 2
 
 ```{r}
-#| echo: false
-2 * 2
+# tentando o gráfico da esquerda
+
+# definindo a matriz de correlação entre as variáveis
+sigma <- matrix(c(1, 0, 0, 1), ncol=2)
+
+# gerando os dados normal bivariada para laranja
+sim_norm <- rmvnorm(n=20, mean=c(3,3), sigma=sigma)
+norm_laranja <- data.frame(sim_norm)
+
+# gerando os dados normal bivariada para verde
+sim_norm <- rmvnorm(n=20, mean=c(9,6), sigma=sigma)
+norm_verde <- data.frame(sim_norm)
+
+# gerando os dados normal bivariada para azul
+sim_norm <- rmvnorm(n=20, mean=c(3,9), sigma=sigma)
+norm_azul <- data.frame(sim_norm)
+
+# juntando os dados para o gráfico da esquerda
+dados.finais.e <- bind_rows(norm_laranja, norm_verde, norm_azul)
+
+# definindo as classes
+x <- c("orange","green","blue")
+
+#juntando valores e classes para o gráfico da esquerda
+dados.finais.e <- mutate(dados.finais.e, Grupo = rep(x, c(20,20,20)))
+
+# construindo o gráfico da esquerda
+plot.esquerda <-
+ggplot(dados.finais.e) +
+  aes(x = X1, y = X2, colour = Grupo) +
+  geom_point(shape = "circle") +
+  scale_color_manual(
+    values = c(blue = "blue",
+               green = "green",
+               orange = "orange")
+  ) +
+  xlim(min(dados.finais.e[,1])-0.5,max(dados.finais.e[,1]+0.5)) +
+  ylim(min(dados.finais.e[,2])-0.5,max(dados.finais.e[,2]+0.5)) +
+  theme_bw() +
+  theme (legend.position = "none")
+
+#plot.esquerda
+
+# verificação da predição para o gráfico da esquerda
+#Se (x1 = 2; x2 = 4) (para k = 1, 5 ou 10) a observação seria de qual grupo?
+#Se (x1 = 4; x2 = 5) (para k = 1, 5 ou 10) a observação seria de qual grupo?
+
+teste<-c(4,6) #valores para x1 e x2 da amostra de teste
+Grupo<-dados.finais.e[,3]
+dados2<-dados.finais.e[,-3]
+
+#para efeito de comparacao
+# dist(rbind(dados2,teste))
+library(class)
+saida.knn.test<-knn(dados2,teste,Grupo,k=10,prob=T)
+saida.knn.test
+
+#---------------------------------------------------
+# repetindo para tentar o gráfico da direita
+
+# gerando os dados normal bivariada para laranja
+#sigma <- matrix(c(1, 0, 0, 1), ncol=2)
+sim_norm <- rmvnorm(n=20, mean=c(3,3), sigma=sigma)
+norm_laranja <- data.frame(sim_norm)
+
+# gerando os dados normal bivariada para verde
+sim_norm <- rmvnorm(n=20, mean=c(6,4), sigma=sigma)
+
+norm_verde <- data.frame(sim_norm)
+
+# gerando os dados normal bivariada para azul
+sim_norm <- rmvnorm(n=20, mean=c(3,6), sigma=sigma)
+norm_azul <- data.frame(sim_norm)
+
+#juntando os dados
+dados.finais.d <- bind_rows(norm_laranja, norm_verde, norm_azul)
+
+# classes
+x <- c("orange","green","blue")
+
+#juntando valores e classes para o gráfico da esquerda
+dados.finais.d <- mutate(dados.finais.d, Grupo = rep(x, c(20,20,20)))
+
+# construindo o gráfico da direita
+plot.direita <- 
+  ggplot(dados.finais.d) +
+  aes(x = X1, y = X2, colour = Grupo) +
+  geom_point(shape = "circle") +
+  scale_color_manual(
+    values = c(blue = "blue",
+               green = "green",
+               orange = "orange")
+  ) +
+  xlim(min(dados.finais.d[,1])-0.5,max(dados.finais.d[,1]+0.5)) +
+  ylim(min(dados.finais.d[,2])-0.5,max(dados.finais.d[,2]+0.5)) +
+  theme_bw() +
+  theme (legend.position = "none")
+
+#plot.direita
+
+# verificação da predição para o gráfico da direita
+#Se (x1 = 2; x2 = 4) (para k = 1, 5 ou 10) a observação seria de qual grupo?
+#Se (x1 = 4; x2 = 5) (para k = 1, 5 ou 10) a observação seria de qual grupo?
+
+teste<-c(2,4) #valores para x1 e x2 da amostra de teste
+Grupo<-dados.finais.d[,3]
+dados2<-dados.finais.d[,-3]
+
+#para efeito de comparacao
+#dist(rbind(dados2,teste))
+library(class)
+saida.knn.test<-knn(dados2,teste,Grupo,k=1,prob=T)
+saida.knn.test
+
+#------------------------------------------------------------
+# juntando os plots
+grid.arrange(plot.esquerda, plot.direita, ncol = 2)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+
+## Question 3
+
+## Question 4
