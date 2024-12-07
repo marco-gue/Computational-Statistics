@@ -152,4 +152,47 @@ grid.arrange(plot.esquerda, plot.direita, ncol = 2)
 
 ## Question 3
 
+$$
+D_{Euclidean}(x_i,x_j) = \sqrt{\sum^p_{s=1}(x_{is}  - x_{js})^2}
+$$
+
+where $x_i$ is the value of the predictors for observation $i$, $x_i$ is the value of the predictors for observation $j$, $p$ represents the total number of variables or dimensions in the space where the points $x_i$ and $x_j$ are located, and $s$ is an index that iterates over each variable or dimension, from 1 to $p$.
+
+Euclidian distance between observations $i=4$ and $j=6$:
+
+$$
+D_{Euclidean}(x_4,x_6) = \sqrt{(0  - 1)^2 + (1  - 1)^2 + (2  - 1)^2} = \sqrt{2} = 1.414214
+$$
+
+```{r}
+x1<-c(0,2,0,0,-1,1)
+x2<-c(3,0,1,1,0,1)
+x3<-c(0,0,3,2,1,1)
+y<-c('red','red','red','green','green','red')
+dados<-data.frame(x1,x2,x3,y)
+dados
+```
+
+
+```{r}
+dist_euclid <- function(x1,x2)
+  {
+  d <- sqrt(sum((x1-x2)^2)) ;return(d)
+}
+
+dados2<-dados[,-4]
+
+dist_euclid(dados2[4,],dados2[6,])
+```
+
+```{r}
+dist(dados2) 
+```
+
+
 ## Question 4
+
+```{r}
+
+```
+
