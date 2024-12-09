@@ -29,9 +29,8 @@ library("gridExtra")
 
 ## Question 2
 
+#### Gráfico da esquerda
 ```{r}
-# tentando o gráfico da esquerda
-
 # definindo a matriz de correlação entre as variáveis
 sigma <- matrix(c(1, 0, 0, 1), ncol=2)
 
@@ -77,19 +76,28 @@ ggplot(dados.finais.e) +
 #Se (x1 = 2; x2 = 4) (para k = 1, 5 ou 10) a observação seria de qual grupo?
 #Se (x1 = 4; x2 = 5) (para k = 1, 5 ou 10) a observação seria de qual grupo?
 
-teste<-c(4,6) #valores para x1 e x2 da amostra de teste
+teste <- rbind(c(2, 4), c(4, 5))
+
 Grupo<-dados.finais.e[,3]
 dados2<-dados.finais.e[,-3]
+```
 
-#para efeito de comparacao
-# dist(rbind(dados2,teste))
+
+```{r}
 library(class)
-saida.knn.test<-knn(dados2,teste,Grupo,k=10,prob=T)
-saida.knn.test
+saida.knn.test1 <- knn(dados2,teste,Grupo,k=1,prob=T)
+saida.knn.test1
 
-#---------------------------------------------------
-# repetindo para tentar o gráfico da direita
+saida.knn.test2 <- knn(dados2,teste,Grupo,k=5,prob=T)
+saida.knn.test2
 
+saida.knn.test3 <- knn(dados2,teste,Grupo,k=10,prob=T)
+saida.knn.test3
+```
+
+
+#### Gráfico da direita
+```{r}
 # gerando os dados normal bivariada para laranja
 #sigma <- matrix(c(1, 0, 0, 1), ncol=2)
 sim_norm <- rmvnorm(n=20, mean=c(3,3), sigma=sigma)
@@ -104,16 +112,12 @@ norm_verde <- data.frame(sim_norm)
 sim_norm <- rmvnorm(n=20, mean=c(3,6), sigma=sigma)
 norm_azul <- data.frame(sim_norm)
 
-#juntando os dados
 dados.finais.d <- bind_rows(norm_laranja, norm_verde, norm_azul)
 
-# classes
 x <- c("orange","green","blue")
 
-#juntando valores e classes para o gráfico da esquerda
 dados.finais.d <- mutate(dados.finais.d, Grupo = rep(x, c(20,20,20)))
 
-# construindo o gráfico da direita
 plot.direita <- 
   ggplot(dados.finais.d) +
   aes(x = X1, y = X2, colour = Grupo) +
@@ -128,24 +132,26 @@ plot.direita <-
   theme_bw() +
   theme (legend.position = "none")
 
-#plot.direita
+teste <- rbind(c(2, 4), c(4, 5))
 
-# verificação da predição para o gráfico da direita
-#Se (x1 = 2; x2 = 4) (para k = 1, 5 ou 10) a observação seria de qual grupo?
-#Se (x1 = 4; x2 = 5) (para k = 1, 5 ou 10) a observação seria de qual grupo?
-
-teste<-c(2,4) #valores para x1 e x2 da amostra de teste
 Grupo<-dados.finais.d[,3]
 dados2<-dados.finais.d[,-3]
+```
 
-#para efeito de comparacao
-#dist(rbind(dados2,teste))
-library(class)
-saida.knn.test<-knn(dados2,teste,Grupo,k=1,prob=T)
-saida.knn.test
 
-#------------------------------------------------------------
-# juntando os plots
+```{r}
+saida.knn.test1 <- knn(dados2,teste,Grupo,k=1,prob=T)
+saida.knn.test1
+
+saida.knn.test2 <- knn(dados2,teste,Grupo,k=5,prob=T)
+saida.knn.test2
+
+saida.knn.test3 <- knn(dados2,teste,Grupo,k=10,prob=T)
+saida.knn.test3
+```
+
+#### Juntando os plots
+```{r}
 grid.arrange(plot.esquerda, plot.direita, ncol = 2)
 ```
 
@@ -193,6 +199,83 @@ dist(dados2)
 ## Question 4
 
 ```{r}
+sigma <- matrix(c(1, 0, 0, 1), ncol=2)
+sim_x <- rmvnorm(n=100, mean=c(0,0), sigma=sigma)
+data1 <- data.frame(sim_x)
 
+# construindo o modelo usado para a simulação
+erro.aleatorio <- rnorm(100, 0, 0.4)
+y <- data1[,1] + data1[,2] + I(data1[,2]^2) + erro.aleatorio
+#criando classes para y
+ycod <- ifelse(y>mean(y), 1, 0)
+
+dados.finais <- cbind(data1,y,ycod)
+dim(dados.finais)
+plot(dados.finais)
+```
+
+Fazendo e partiçoes
+```{r}
+dados.tst1 <- slice(dados.finais, 1:20)
+dados.tst2 <- slice(dados.finais, 21:40)
+dados.tst3 <- slice(dados.finais, 41:60)
+dados.tst4 <- slice(dados.finais, 61:80)
+```
+
+Usando loop
+```{r}
+for (i in 1:4) {
+  inicio <- (i - 1) * 20 + 1
+  fim <- i * 20
+  nome_objeto <- paste0("dados.tst", i)
+  assign(nome_objeto, slice(dados.finais, inicio:fim))
+}
+```
+
+Dados de treinamento
+```{r}
+dados.trn <- slice(dados.finais, 81:100)
+```
+
+```{r}
+# set.seed (1)
+train <- dados.trn[,-c(3,4)]
+test1 <- dados.tst1[,-c(3,4)]
+test2 <- dados.tst2[,-c(3,4)]
+test3 <- dados.tst3[,-c(3,4)]
+test4 <- dados.tst4[,-c(3,4)]
+
+classe <- as.factor(dados.trn[,4])
+
+# str(dados.trn.1)
+# rodando o KNN
+```
+
+```{r}
+knn.pred <- knn(train, test1, classe, k = 5)
+true <- as.factor(dados.tst1$ycod)
+table(knn.pred , true)
+mean(knn.pred != true)
+```
+
+```{r}
+knn.pred <- knn(train, test2, classe, k = 5)
+true <- as.factor(dados.tst2$ycod)
+table(knn.pred , true)
+mean(knn.pred != true)
+```
+
+```{r}
+knn.pred <- knn(train, test3, classe, k = 5)
+true <- as.factor(dados.tst3$ycod)
+table(knn.pred , true)
+mean(knn.pred != true)
+```
+
+```{r}
+knn.pred <- knn(train, test4, classe, k = 5)
+true <- as.factor(dados.tst4$ycod)
+table(knn.pred , true)
+mean(knn.pred != true)
 ```
 
