@@ -15,18 +15,228 @@ format:
 editor_options: 
   chunk_output_type: console
 ---
+```{r, include=FALSE}
+library(ggplot2)
+```
 
 
 ## Question 1
-```{r}
 
+### A. Randomization Test
+```{r}
+resample_u_between <- function(data, n1, n2, iterations) {
+  
+  nsample <- n1 + n2
+  
+  # Calcula a diferença observada (target)
+  target <- abs(mean(data[1:n1]) - mean(data[(n1 + 1):nsample]))
+  
+  # Inicializa vetor para armazenar comparações
+  ucomp <- numeric(iterations)
+  
+  # Loop para realizar permutações
+  for (y in 1:iterations) {
+    # Permutação dos dados
+    perm <- sample(data, replace = FALSE)
+    
+    # Divide os dados permutados em duas amostras
+    mean_first <- mean(perm[1:n1])
+    mean_second <- mean(perm[(n1 + 1):nsample])
+    
+    # Calcula a diferença absoluta
+    mean_diff <- abs(mean_first - mean_second)
+    
+    # Compara a diferença permutada com a observada
+    ucomp[y] <- ifelse(mean_diff >= target, 1, 0)
+  }
+  
+  # Calcula a proporção de diferenças permutadas maiores ou iguais à observada
+  uexceed <- mean(ucomp)
+  
+  # Exibe os resultados
+  cat("Diferença média observada:", target, "\n")
+  cat("Proporção excedendo a diferença média observada:", uexceed, "\n")
+}
+
+```
+
+#### Normal
+```{r}
+popn_20 <- rnorm(20,10,1)
+resample_u_between(popn_20, 10, 10, 10000)
+```
+
+```{r}
+popn_60 <- rnorm(60,10,1)
+resample_u_between(popn_60, 30, 30, 10000)
+```
+
+```{r}
+popn_100 <- rnorm(100,10,1)
+resample_u_between(popn_100, 50, 50, 10000)
+```
+
+
+#### Poisson
+```{r}
+popp_20 <- rpois(20,10)
+resample_u_between(popp_20, 10, 10, 10000)
+```
+
+
+```{r}
+popp_60 <- rpois(60,10)
+resample_u_between(popp_60, 30, 30, 10000)
+```
+
+
+```{r}
+popp_100 <- rpois(100,10)
+resample_u_between(popp_100, 50, 50, 10000)
+```
+
+### B. Booststrap for IC
+
+Assuming normality, the approximate 95\% confidence interval is given by
+
+$$
+\widehat{CV} \pm 1.96\sqrt{Var(bootstrap)}
+$$
+
+```{r, eval=FALSE}
+cv <- function(x) sqrt(var(x))/mean(x)
+
+boot <-NA
+
+for (i in 1:10000) boot[i] <- cv(sample(x,replace=T))
+
+### Recall from the notes that the estimate of the bias
+# is given by the difference between the mean of the bootstrap values
+# and the initial estimate,
+
+bias <- mean(boot) - cv(x)
+
+cv(x) - bias - 1.96*sqrt(var(boot))
+
+cv(x) - bias + 1.96*sqrt(var(boot))
+```
+
+#### Normal
+
+```{r, echo=FALSE}
+cv <- function(x) sqrt(var(x))/mean(x)
+
+lista_de_dados <- list(popn_20,popn_60,popn_100)
+
+for (k in 1:length(lista_de_dados)) {
+  x <- lista_de_dados[[k]] 
+
+  boot <- NA
+  for (i in 1:10000) {
+    boot[i] <- cv(sample(x, replace = TRUE))
+  }
+
+  bias <- mean(boot) - cv(x)
+
+  lower_bound <- cv(x) - bias - 1.96 * sqrt(var(boot))
+  upper_bound <- cv(x) - bias + 1.96 * sqrt(var(boot))
+
+  # Exibir resultados para o conjunto de dados atual
+  cat("Para o conjunto de dados com distribuição Normal", k, ":\n")
+  cat("CV:", cv(x), "\n")
+  cat("Viés:", bias, "\n")
+  cat("Limite inferior do intervalo de confiança:", lower_bound, "\n")
+  cat("Limite superior do intervalo de confiança:", upper_bound, "\n\n")
+}
+```
+
+#### Poisson
+
+```{r, echo=FALSE}
+cv <- function(x) sqrt(var(x))/mean(x)
+
+lista_de_dados <- list(popp_20,popp_60,popp_100)
+
+for (k in 1:length(lista_de_dados)) {
+  x <- lista_de_dados[[k]] 
+
+  boot <- NA
+  for (i in 1:10000) {
+    boot[i] <- cv(sample(x, replace = TRUE))
+  }
+
+  bias <- mean(boot) - cv(x)
+
+  lower_bound <- cv(x) - bias - 1.96 * sqrt(var(boot))
+  upper_bound <- cv(x) - bias + 1.96 * sqrt(var(boot))
+
+  # Exibir resultados para o conjunto de dados atual
+  cat("Para o conjunto de dados com distribuição Poisson  ", k, ":\n")
+  cat("CV:", cv(x), "\n")
+  cat("Viés:", bias, "\n")
+  cat("Limite inferior do intervalo de confiança:", lower_bound, "\n")
+  cat("Limite superior do intervalo de confiança:", upper_bound, "\n\n")
+}
 ```
 
 
 ## Question 2
-```{r}
 
+### A. Randomization Test
+
+#### Normal
+```{r}
+pop1 <- rnorm(10,10,1)
+pop2 <- rnorm(10,30,5)
+popn_20 <- c(pop1,pop2)
+resample_u_between(popn_20, 10, 10, 10000)
 ```
+
+```{r}
+pop1 <- rnorm(30,10,1)
+pop2 <- rnorm(30,30,5)
+popn_60 <- c(pop1,pop2)
+resample_u_between(popn_60, 30, 30, 10000)
+```
+
+```{r}
+pop1 <- rnorm(50,10,1)
+pop2 <- rnorm(50,30,5)
+popn_100 <- c(pop1,pop2)
+resample_u_between(popn_100, 50, 50, 10000)
+```
+
+### B. Booststrap for IC
+
+#### Normal
+
+```{r}
+cv <- function(x) sqrt(var(x))/mean(x)
+
+lista_de_dados <- list(popn_20,popn_60,popn_100)
+
+for (k in 1:length(lista_de_dados)) {
+  x <- lista_de_dados[[k]] 
+
+  boot <- NA
+  for (i in 1:10000) {
+    boot[i] <- cv(sample(x, replace = TRUE))
+  }
+
+  bias <- mean(boot) - cv(x)
+
+  lower_bound <- cv(x) - bias - 1.96 * sqrt(var(boot))
+  upper_bound <- cv(x) - bias + 1.96 * sqrt(var(boot))
+
+  # Exibir resultados para o conjunto de dados atual
+  cat("Para o conjunto de dados com distribuição Normal", k, ":\n")
+  cat("CV:", cv(x), "\n")
+  cat("Viés:", bias, "\n")
+  cat("Limite inferior do intervalo de confiança:", lower_bound, "\n")
+  cat("Limite superior do intervalo de confiança:", upper_bound, "\n\n")
+}
+```
+
 
 
 ## Question 3
