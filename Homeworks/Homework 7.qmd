@@ -237,22 +237,259 @@ for (k in 1:length(lista_de_dados)) {
 }
 ```
 
-
-
 ## Question 3
-```{r}
 
+**k-Fold Cross-Validation**
+
+```{r}
+library(ISLR)
+set.seed(17)
 ```
 
+
+```{r}
+sorteio <- sample(1:length(Auto$mpg), replace = FALSE)
+```
+
+
+```{r, warning=FALSE}
+k <- 10
+cvs <- split(sorteio,1:k)
+cv <- 1:k 
+```
+
+
+```{r}
+grau.polinomio <- 5
+cv.error.10 <- matrix (NA , nrow = k, ncol = grau.polinomio)
+```
+
+
+```{r}
+for (k in cv) { 
+  for (i in 1:grau.polinomio) {
+    
+    glm.fit <- glm(mpg ~ poly(horsepower ,i),data=Auto[-c(cvs[[k]]),])
+    
+    cv.error.10[k,i] <- mean((Auto$mpg-predict(glm.fit, Auto))[cvs[[k]]]^2, na.rm = T)
+    
+  }
+}
+```
+
+
+```{r}
+cv.error.10
+```
+
+
+```{r}
+matplot(1:grau.polinomio, t(cv.error.10), type = "b", pch = 1,
+        ylab = "Mean Squared Error", xlab = "Degree of Polynomial")
+```
+
+
+```{r}
+colMeans(cv.error.10)
+diag(var(cv.error.10))
+```
 
 ## Question 4
 ```{r}
+metropolis.ex1<-function(tamanho.amostra){
+  
+  n<-tamanho.amostra
+  
+  amostra.y<-numeric(n)
+  amostra.z<-numeric(n)
 
+  countn<-0
+
+  countu<-0
+  
+  repeat{
+    if (countn==n) break
+      u1y <- runif(1)
+      u2y <- runif(1,0,5/3)
+      if(u2y < 1/3*(1+4*u1y)){
+        amostra.y[countn+1] <- u1y
+        #u1y <- 0 #se quiser fixar um valor de y = u1y
+        yi <- amostra.y[countn+1]
+
+        v <- runif(1) #da fv(.) #aqui escolhi usar fv = uniforme
+        amostra.z[1] <- v #esse é o meu z0
+        ui <- runif(1)
+        vi <- runif(1)
+        zimenos1 <- amostra.z[countn+1]
+        fyvi <- 2*(vi+2*yi)/(1+4*yi)
+        fyzimenos1 <- 2*(zimenos1+2*yi)/(1+4*yi)
+        # agora, no caso, como a fv é uniforme no intervalo (0, 1)
+        fvvi <- 1
+        fvzimenos1 <- 1
+        roi <- min((fyvi/fvvi*fvzimenos1/fyzimenos1),1)
+        if(ui <= roi){amostra.z[countn+2]<-vi}
+        else{amostra.z[countn+2]<-zimenos1}
+        # fim do Metropolis-Hasting
+        countn <- countn+1
+        }
+      countu <- countu+1
+  }
+  
+  cat("foram gerados ",countu, "grupos de v.a. uniformes","\n")
+  cat("para simular ",countn, "valores das v.a.s de interesse","\n")
+  cat("razão de eficiência aproximada", round((countn/countu)*100,2), "%","\n")
+  
+  return(list(y=amostra.y, z=amostra.z[-1] ))
+  
+}
 ```
 
+#### Acceptance-Rejection Sampling for $\mathbf{Y}$
+```{r}
+u1y <- runif(1)
+u2y <- runif(1, 0, 5/3)
+```
+Generates two uniform random numbers:
+
+* [u1y]{colour="#FFFFFF" bg-colour="#009999"}: Uniformily distributed in $[0,1]$
+
+* [u2y]{colour="#FFFFFF" bg-colour="#009999"}: Uniformily distributed in $\left[0,\frac{5}{3}\right]$
+
+```{r, eval=FALSE}
+if (u2y < 1/3 * (1 + 4 * u1y)) {
+```
+Ckecks if [u2y]{colour="#FFFFFF" bg-colour="#009999"} satisfies the condition for acceptance, where the target density is proportional to $\frac{1}{3}(1+4u_1)$
+
+```{r, eval=FALSE}
+amostra.y[countn + 1] <- u1y
+```
+Acceptance [u1y]{colour="#FFFFFF" bg-colour="#009999"} as sample for $\mathbf{Y}$ and stores it in amostra.y
+
+#### Start of Metropolis-Hastings for $\mathbf{Z}$
+
+```{r, eval=FALSE}
+yi <- amostra.y[countn + 1]
+```
+Sets [yi]{colour="#FFFFFF" bg-colour="#009999"} to the most recently accepted sample of $\mathbf{Z}$
+
+```{r, eval=FALSE}
+v <- runif(1)
+amostra.z[1] <- v
+```
+Generates a random value $v$ uniformily distributed in $[0,1]$ and assigns it as the initial sample $z_0$ for $\mathbf{Z}$
+
+```{r, eval=FALSE}
+ui <- runif(1)
+vi <- runif(1)
+zimenos1 <- amostra.z[countn + 1]
+```
+
+* [ui]{colour="#FFFFFF" bg-colour="#009999"}: Uniform random number used in the acceptance step of Metropolis-Hastings
+
+* [vi]{colour="#FFFFFF" bg-colour="#009999"}: Proposed value for $\mathbf{Z}$ in the Markov chain
+
+* [zimenos1]{colour="#FFFFFF" bg-colour="#009999"}: Previous value of $\mathbf{Z}$
+
+#### Evaluate Conditional Densities for $\mathbf{Z}$
+
+```{r, eval=FALSE}
+fyvi <- 2 * (vi + 2 * yi) / (1 + 4 * yi)
+fyzimenos1 <- 2 * (zimenos1 + 2 * yi) / (1 + 4 * yi)
+```
+Calculates the conditional densities $f(y|z)\, for \, \mathbf{Z} \, = \, vi$ and $\mathbf{Z} \, = \, zimenos1$, given the current $\mathbf{Y}$
+
+#### Uniform Proposal Distribution
+
+```{r, eval=FALSE}
+fvvi <- 1
+fvzimenos1 <- 1
+```
+Since the proposal distribution is uniform on $[0,1]$, its density is 1
+
+#### Calculate Acceptance Ratio and Decide
+```{r, eval=FALSE}
+roi <- min((fyvi / fvvi * fvzimenos1 / fyzimenos1), 1)
+if (ui <= roi) {
+  amostra.z[countn + 2] <- vi
+} else {
+  amostra.z[countn + 2] <- zimenos1
+}
+```
+
+* [roi]{colour="#FFFFFF" bg-colour="#009999"}: Calculates the acceptance ratio $\rho_i$
+
+* If $u_i \le \rho_i$, the proposal $vi$ is accepted
+
+* Otherwise, the chain retains the previous value $zimenos1$
 
 ## Question 5
 ```{r}
+fx_yz<-function(x,y,z){(x+y+z)/(y+z+1/2)}
+fy_xz<-function(x,y,z){(x+y+z)/(x+z+1/2)}
+fz_xy<-function(x,y,z){(x+y+z)/(x+y+1/2)}
 
+gibbs <- function(n, m, burn) {
+  x <- 0
+  y <- 0
+  z <- 0
+  
+  count <- 2
+  
+  repeat {
+    if (length(z) == n) break
+    
+    # Gerando x
+    u_x <- runif(1, 0, 1)
+    u_y <- runif(1, 0, m)
+    
+    y_n <- fx_yz(u_x, y[count - 1], z[count - 1])
+    
+    if (u_y < y_n) {
+      x[count] <- u_x
+      
+      # Gerando y
+      u_x <- runif(1, 0, 1)
+      u_y <- runif(1, 0, m)
+      
+      y_n <- fy_xz(x[count], u_x, z[count - 1])
+      
+      if (u_y < y_n) {
+        y[count] <- u_x
+        
+        # Gerando z
+        u_x <- runif(1, 0, 1)
+        u_y <- runif(1, 0, m)
+        
+        y_n <- fz_xy(x[count], y[count], u_x)
+        
+        if (u_y < y_n) {
+          z[count] <- u_x
+          count <- count + 1
+        }
+      }
+    }
+  }
+  
+  burn_in <- ceiling(burn * n)
+  x <- x[-(1:burn_in)]
+  y <- y[-(1:burn_in)]
+  z <- z[-(1:burn_in)]
+  
+  return(cbind(x, y, z))
+}
+```
+
+```{r}
+j <- gibbs(1000, 10, 0.1)
+```
+
+$$
+E(X) = E(Y) = E(Z) = \frac{5}{9} = 0.5555556
+$$
+
+```{r}
+mean(j[,1])
+mean(j[,2])
+mean(j[,3])
 ```
 
