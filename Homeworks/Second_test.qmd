@@ -1,0 +1,154 @@
+---
+title: "Second Test"
+subtitle: "Prof: Luiz Peternelli"
+author: "Marco Guerra Hinostroza"
+date: "`r Sys.Date()`"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+    number-sections: false
+    code-fold: false
+    filters:
+        - highlight-text
+editor_options: 
+  chunk_output_type: console
+---
+```{r, echo=FALSE, message=FALSE}
+library(tidyverse)
+```
+
+## Question 1
+
+```{r}
+data <- read.table("dados.full-preparadoP2.csv", sep = ";", header = T)
+data <- data %>%
+  mutate(across(c(nc, ac, dc, tchr), ~ as.numeric(gsub(",", ".", .))))
+str(data)
+```
+
+```{r}
+set.seed(1)
+sorteio <- sample(1:length(data$tchr), replace = FALSE)
+```
+
+```{r, warning=FALSE}
+k <- 5
+cvs <- split(sorteio,1:k)
+cv <- 1:k 
+```
+
+```{r}
+grau.polinomio <- 5
+cv.error.5 <- matrix (NA, nrow = k, ncol = grau.polinomio)
+```
+
+```{r}
+for (k in cv) { 
+  for (i in 1:grau.polinomio) {
+    
+    glm.fit <- glm(tchr ~ poly(nc ,i), data = data[-c(cvs[[k]]),])
+    
+    cv.error.5[k,i] <- mean((data$tchr-predict(glm.fit, data))[cvs[[k]]]^2, na.rm = T)
+    
+  }
+}
+```
+
+```{r}
+cv.error.5
+```
+
+```{r}
+matplot(1:grau.polinomio, t(cv.error.5), type = "b", pch = 1,
+        ylab = "Mean Squared Error", xlab = "Degree of Polynomial")
+```
+
+```{r}
+colMeans(cv.error.5)
+```
+
+
+```{r}
+diag(var(cv.error.5))
+```
+
+## Question 2
+
+```{r}
+cv.error.nc <- matrix(NA, nrow = k, ncol = grau.polinomio)
+for (k in cv) { 
+  for (i in 1:grau.polinomio) {
+    glm.fit <- glm(tchr ~ poly(nc ,i), data = data[-c(cvs[[k]]),])
+    cv.error.nc[k,i] <- mean((data$tchr-predict(glm.fit, data))[cvs[[k]]]^2, na.rm = T)
+  }
+}
+melhor_grau_nc <- which.min(colMeans(cv.error.nc))
+
+cv.error.ac <- matrix(NA, nrow = k, ncol = grau.polinomio)
+for (k in cv) { 
+  for (i in 1:grau.polinomio) {
+    glm.fit <- glm(tchr ~ poly(ac ,i), data = data[-c(cvs[[k]]),])
+    cv.error.ac[k,i] <- mean((data$tchr-predict(glm.fit, data))[cvs[[k]]]^2, na.rm = T)
+  }
+}
+melhor_grau_ac <- which.min(colMeans(cv.error.ac))
+
+cv.error.dc <- matrix(NA, nrow = k, ncol = grau.polinomio)
+for (k in cv) { 
+  for (i in 1:grau.polinomio) {
+    glm.fit <- glm(tchr ~ poly(dc ,i), data = data[-c(cvs[[k]]),])
+    cv.error.dc[k,i] <- mean((data$tchr-predict(glm.fit, data))[cvs[[k]]]^2, na.rm = T)
+  }
+}
+melhor_grau_dc <- which.min(colMeans(cv.error.dc))
+```
+
+
+```{r}
+formula_final <- as.formula(paste(
+  "tchr ~ poly(nc,", melhor_grau_nc, ") +",
+  "poly(ac,", melhor_grau_ac, ") +",
+  "poly(dc,", melhor_grau_dc, ")"
+))
+formula_final
+```
+
+
+```{r}
+cv.error.final <- matrix(NA, nrow = k, ncol = 1)
+
+for (k in cv) {
+  glm.final <- glm(formula_final, data = data[-c(cvs[[k]]), ])
+  cv.error.final[k, 1] <- mean((data$tchr - predict(glm.final, data))[cvs[[k]]]^2, na.rm = TRUE)
+}
+
+cv.error.final
+
+mean(cv.error.final)
+
+```
+
+**Is this new model (from problem 2) better than any of the models in problem 1?**
+
+## Question 3
+
+```{r}
+data1 <- data |> filter(exp == 1)
+
+
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
