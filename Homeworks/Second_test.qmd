@@ -134,21 +134,115 @@ mean(cv.error.final)
 
 ## Question 3
 
+### Problem a
 ```{r}
-data1 <- data |> filter(exp == 1)
-
-
+train <- data |> filter(exp != 1)
+test <- data |> filter(exp == 1)
 ```
 
 ```{r}
+glm3 <- glm(tchr ~ poly(nc, 2) + poly(ac, 1) + poly(dc, 1), data = train)
+```
 
+```{r}
+summary(glm3)
+```
+
+```{r}
+testp <- test |> mutate(predicted_tchr = predict(glm3, newdata = test, type = "response"))
+```
+
+```{r}
+error <- mean((testp$tchr - testp$predicted_tchr)^2)
+error
+```
+
+### Problem b
+
+```{r}
+variaveis <- train |> select(tchr, nc, dc, ac)
+matriz_cov <- cov(variaveis)
+matriz_cov
+```
+
+```{r}
+summary(train[,4:7])
+```
+
+```{r}
+gera.mult.chol<-function(vu, sigma, iter)
+  {
+  mu <- vu
+  fc <- chol(sigma)
+  iter <- iter
+  p <- length(fc[1,])
+  variaveis <- matrix(99, iter, p)
+  for (i in 1:iter)
+    {
+    z <- rnorm(p)
+    variaveis[i,] <- mu+t(fc)%*%z 
+    }
+  return(variaveis)
+}
+```
+
+```{r}
+simulations <- c(500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000)
+
+mu <- c(108.35, 108.2, 25.28, 2.527)
+
+set.seed(2)
+for (sim in simulations){
+  j <- gera.mult.chol(mu, matriz_cov, sim)
+  temp_df <- as.data.frame(j) |> rename(tchr = V1, nc = V2, dc = V3, ac = V4)
+  assign(paste0("j_", sim), temp_df)
+}
+
+calcular_error <- function(data){
+  modelo <- glm(tchr ~ poly(nc, 2) + poly(ac, 1) + poly(dc, 1), data = data)
+  test <- test |> mutate(predicted_tchr = predict(modelo, newdata = test, type = "response"))
+  error <- mean((test$tchr - test$predicted_tchr)^2)
+  return(error)
+}
+
+datasets <- list(j_500, j_1000, j_1500, j_2000, j_2500,
+                 j_3000, j_3500, j_4000, j_4500, j_5000)
+
+e <- lapply(datasets, calcular_error)
+```
+
+Synthetic data helps to increase the accuracy of predictions (<MSE) compared to the value of 87.0078 when using just the available data.
+```{r}
+matplot(simulations, unlist(e), type = "b", col = "blue", pch = 9,
+        xlab = "Number of simulated values", ylab = "Mean Squared Error", 
+        main = "Error by Number of simulated values")
 ```
 
 
+However, an increase in the amount of simulated data does not necessarily result in a progressive improvement in prediction accuracy, as demonstrated below using a another [set.seed()]{colour="#FFFFFF" bg-colour="#009999"}.
+```{r}
+set.seed(5)
+for (sim in simulations){
+  j <- gera.mult.chol(mu, matriz_cov, sim)
+  temp_df <- as.data.frame(j) |> rename(tchr = V1, nc = V2, dc = V3, ac = V4)
+  assign(paste0("j_", sim), temp_df)
+}
 
+calcular_error <- function(data){
+  modelo <- glm(tchr ~ poly(nc, 2) + poly(ac, 1) + poly(dc, 1), data = data)
+  test <- test |> mutate(predicted_tchr = predict(modelo, newdata = test, type = "response"))
+  error <- mean((test$tchr - test$predicted_tchr)^2)
+  return(error)
+}
 
+datasets <- list(j_500, j_1000, j_1500, j_2000, j_2500,
+                 j_3000, j_3500, j_4000, j_4500, j_5000)
 
+e <- lapply(datasets, calcular_error)
 
-
+matplot(simulations, unlist(e), type = "b", col = "blue", pch = 9,
+        xlab = "Number of simulated values", ylab = "Mean Squared Error", 
+        main = "Error by Number of simulated values")
+```
 
 
