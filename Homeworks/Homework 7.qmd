@@ -246,24 +246,21 @@ library(ISLR)
 set.seed(17)
 ```
 
-
 ```{r}
 sorteio <- sample(1:length(Auto$mpg), replace = FALSE)
 ```
 
-
+This approach involves randomly dividing the set of observations into $k$ groups, or folds, of approximately equal size. The ﬁrst fold is treated as a validation set, and the method is ﬁt on the remaining $k − 1$ folds. The mean squared error, $MSE$, is then computed on the observations in the held-out fold. This procedure is repeated $k$ times; each time, a diﬀerent group of observations is treated as a validation set.
 ```{r, warning=FALSE}
 k <- 10
 cvs <- split(sorteio,1:k)
 cv <- 1:k 
 ```
 
-
 ```{r}
 grau.polinomio <- 5
 cv.error.10 <- matrix (NA , nrow = k, ncol = grau.polinomio)
 ```
-
 
 ```{r}
 for (k in cv) { 
@@ -277,11 +274,9 @@ for (k in cv) {
 }
 ```
 
-
 ```{r}
 cv.error.10
 ```
-
 
 ```{r}
 matplot(1:grau.polinomio, t(cv.error.10), type = "b", pch = 1,

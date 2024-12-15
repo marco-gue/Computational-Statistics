@@ -132,6 +132,8 @@ mean(cv.error.final)
 
 **Is this new model (from problem 2) better than any of the models in problem 1?**
 
+It is better because it has a lower MSE. That is, the [glm.final]{colour="#FFFFFF" bg-colour="#009999"} model makes better predictions on test set than any of the other models proposed in item **a**.
+
 ## Question 3
 
 ### Problem a
@@ -226,13 +228,6 @@ for (sim in simulations){
   j <- gera.mult.chol(mu, matriz_cov, sim)
   temp_df <- as.data.frame(j) |> rename(tchr = V1, nc = V2, dc = V3, ac = V4)
   assign(paste0("j_", sim), temp_df)
-}
-
-calcular_error <- function(data){
-  modelo <- glm(tchr ~ poly(nc, 2) + poly(ac, 1) + poly(dc, 1), data = data)
-  test <- test |> mutate(predicted_tchr = predict(modelo, newdata = test, type = "response"))
-  error <- mean((test$tchr - test$predicted_tchr)^2)
-  return(error)
 }
 
 datasets <- list(j_500, j_1000, j_1500, j_2000, j_2500,
